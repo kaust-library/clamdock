@@ -4,19 +4,33 @@
 
 from subprocess import run, STDOUT, PIPE
 from configparser import ConfigParser, ExtendedInterpolation
-
 import sys
 
-def read_config(file_cfg: str, section):
+class Container:
     """
-    Read the config file and return a section
+    Base class for container execution
     """
 
-    cfg = ConfigParser(interpolation=ExtendedInterpolation)
-    cfg.read(file_cfg)
+    def __init__(self, bin_dir: str, exe: str, parameters: list[str]) -> None:
+        self.bin_dir = bin_dir
+        self.exe = exe
+        self.parameters = parameters
 
-    return cfg[section]
 
+class Ingestion:
+    """
+    Base class for ingesting objects with the digital preservation workflow
+    """
+
+    def __init__(self, config_file:str) -> None:
+        self.config_file = config_file
+
+    def read_config(self):
+        """Read the ingestion configuration file"""
+        cfg = ConfigParser(interpolation=ExtendedInterpolation())
+        cfg.read(self.config_file)
+
+        return cfg
 
 def main() -> None:
     """
@@ -25,7 +39,14 @@ def main() -> None:
 
     file_cfg = sys.argv[1]
 
-    av_config = read_config(file_cfg, "CLAMAV")
+    # av_config = read_config(file_cfg, "CLAMAV")
+
+    ingest = Ingestion(file_cfg)
+
+    cfg = ingest.read_config()
+
+    print(cfg['CLAMAV'])
+
 
     
 if __name__ == "__main__":
