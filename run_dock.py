@@ -32,6 +32,13 @@ class Ingestion:
 
         return cfg
 
+class quarantine:
+    pass
+
+class anti_virus(Container):
+    def __init__(self, bin_dir: str, exe: str, parameters: list[str]) -> None:
+        super().__init__(bin_dir, exe, parameters)
+        
 def main() -> None:
     """
     Run a docker container.
