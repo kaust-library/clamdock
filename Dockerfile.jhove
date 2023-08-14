@@ -2,7 +2,6 @@ FROM ibmjava:jre as build
 WORKDIR /work
 RUN wget --no-verbose http://software.openpreservation.org/rel/jhove-latest.jar
 COPY files/auto-install.xml /work
-RUN ls auto-install.xml
 RUN java -jar jhove-latest.jar auto-install.xml
 
 FROM ibmjava:jre-alpine

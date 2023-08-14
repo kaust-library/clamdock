@@ -88,3 +88,15 @@ Jhove (Rel. 1.28.0, 2023-05-18)
   Configuration: /opt/jhove/conf/jhove.conf
 (...)  
 ```
+
+Or building, and running, our own container with Jhove
+
+```
+PS C:\Users\garcm0b\Work\clamdock> docker build -f Dockerfile.jhove -t myjhove .
+PS C:\Users\garcm0b\Work\clamdock> docker run -it --rm --name jhove myjhove 
+Jhove (Rel. 1.28.0, 2023-05-18)
+ Date: 2023-08-14 07:33:30 GMT
+ App:
+  API: 1.28.0, 2023-05-18
+(...)  
+```
