@@ -1,6 +1,7 @@
 # Clamdock
 
 *cfg
+files/*jar
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
