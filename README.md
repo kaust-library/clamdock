@@ -72,3 +72,19 @@ Starting Freshclamd
 Starting ClamAV
 (...)
 ```
+
+## Jhove
+
+Installing Jhove on the container
+
+```
+PS C:\Users\garcm0b\Work\clamdock> docker run -it --rm -v "C:\Users\garcm0b\Work\clamdock\files:/work" --name jhove ibmjava
+root@2e4e123483a9:/work# java -jar jhove-latest.jar auto-install.xml
+root@2e4e123483a9:/opt/jhove# ./jhove
+Jhove (Rel. 1.28.0, 2023-05-18)
+ Date: 2023-08-14 06:39:56 GMT
+ App:
+  API: 1.28.0, 2023-05-18
+  Configuration: /opt/jhove/conf/jhove.conf
+(...)  
+```
