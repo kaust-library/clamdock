@@ -58,6 +58,39 @@ classDiagram
     JHove: list JHoveModules
 ```
 
+### Running Containers
+
+```mermaid
+classDiagram
+    class Container
+    Container: root_dir
+    Container: exec_file
+
+    class AV {
+    av_dir
+        av_bin
+        update_bin
+        log_dir
+        update_db(av_dir, update_bin)
+        run_av(av_bin, av_bin, log_dir)
+        start_quarentine(quarentine)
+        }
+
+    class Droid
+    Droid: droid_dir
+    Droid: keep_profile
+
+    class Jhove
+    Jhove: jhove_dir
+    Jhove: jhove_bin
+    Jhove: jhove_xml
+    Jhove: jhove_modules
+
+    Container <|-- AV
+    Container <|-- Droid
+    Container <|-- Jhove
+```
+
 ## Running Container
 
 Running the ClamAV container directly from command line as test.
