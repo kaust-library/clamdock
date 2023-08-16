@@ -11,11 +11,19 @@ class Container:
     Base class for container execution
     """
 
-    def __init__(self, bin_dir: str, exe: str, parameters: list[str]) -> None:
+    def __init__(self, bin_dir: str, exe: str) -> None:
         self.bin_dir = bin_dir
         self.exe = exe
-        self.parameters = parameters
 
+class anti_virus(Container):
+    def __init__(self, av_dir: str, av_bin: str, config) -> None:
+        super().__init__(bin_dir=av_dir, exe=av_bin)
+        av_update = config['av_update']
+        log_dir = config['av_logs_root']
+        quarantine = config['quarantine']
+
+
+        
 
 class Ingestion:
     """
@@ -35,10 +43,6 @@ class Ingestion:
 class quarantine:
     pass
 
-class anti_virus(Container):
-    def __init__(self, bin_dir: str, exe: str, parameters: list[str]) -> None:
-        super().__init__(bin_dir, exe, parameters)
-        
 def main() -> None:
     """
     Run a docker container.
