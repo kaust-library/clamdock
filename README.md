@@ -34,6 +34,7 @@ classDiagram
     AntiVirus: str ExeScan
     AntiVirus: str LogDir
     AntiVirus: str LogFile
+    AntiVirus: run()
 
     class Quarantine
     Quarantine: str quarFile
@@ -50,46 +51,16 @@ classDiagram
     Droid: str DroidDir
     Droid: str DroidExe
     Droid: bool keepProfile
+    Droid: run()
 
     class JHove
     JHove: str JHoveDir
     JHove: str JHoveExe
     JHove: bool JHoveXML
     JHove: list JHoveModules
+    JHove: run()
 ```
 
-### Running Containers
-
-```mermaid
-classDiagram
-    class Container
-    Container: root_dir
-    Container: exec_file
-
-    class AV {
-    av_dir
-        av_bin
-        update_bin
-        log_dir
-        update_db(av_dir, update_bin)
-        run_av(av_bin, av_bin, log_dir)
-        start_quarentine(quarentine)
-        }
-
-    class Droid
-    Droid: droid_dir
-    Droid: keep_profile
-
-    class Jhove
-    Jhove: jhove_dir
-    Jhove: jhove_bin
-    Jhove: jhove_xml
-    Jhove: jhove_modules
-
-    Container <|-- AV
-    Container <|-- Droid
-    Container <|-- Jhove
-```
 
 ## Running Container
 
