@@ -6,6 +6,7 @@ from subprocess import run, STDOUT, PIPE
 from configparser import ConfigParser, ExtendedInterpolation
 import sys
 
+
 class Container:
     """
     Base class for container execution
@@ -15,12 +16,16 @@ class Container:
         self.bin_dir = bin_dir
         self.exe = exe
 
+class Quarantine:
+    pass    
+
 class anti_virus(Container):
     def __init__(self, av_dir: str, av_bin: str, config) -> None:
         super().__init__(bin_dir=av_dir, exe=av_bin)
-        av_update = config['av_update']
-        log_dir = config['av_logs_root']
-        quarantine = config['quarantine']
+        av_update = config.get('av_update')
+        log_dir = config.get('av_logs_root', raw=True)
+        quarantine = config.getint('quarantine', '30')
+        run_it = config.getbool('run_it', 'True')
 
 
         
@@ -40,8 +45,6 @@ class Ingestion:
 
         return cfg
 
-class quarantine:
-    pass
 
 def main() -> None:
     """
