@@ -39,13 +39,19 @@ classDiagram
     class Quarantine
     Quarantine: str quarFile
     Quarantine: int quarDays
+    Quarantine: check()
 
     class Bag
     Bag: list SourceDirs
     Bag: str SourceDir
     Bag: str DestDir
+    Bag: run()
+    Bag: copy(src, dest)
 
     class Metadata
+    Metadata: str BaseDir
+    Metadata: str BaseBin
+    Metadata: List[options]
 
     class Droid
     Droid: str DroidDir
