@@ -16,26 +16,26 @@ class Container:
         self.bin_dir = bin_dir
         self.exe = exe
 
+
 class Quarantine:
-    pass    
+    pass
+
 
 class anti_virus(Container):
     def __init__(self, av_dir: str, av_bin: str, config) -> None:
         super().__init__(bin_dir=av_dir, exe=av_bin)
-        av_update = config.get('av_update')
-        log_dir = config.get('av_logs_root', raw=True)
-        quarantine = config.getint('quarantine', '30')
-        run_it = config.getbool('run_it', 'True')
+        av_update = config.get("av_update")
+        log_dir = config.get("av_logs_root", raw=True)
+        quarantine = config.getint("quarantine", "30")
+        run_it = config.getbool("run_it", "True")
 
-
-        
 
 class Ingestion:
     """
     Base class for ingesting objects with the digital preservation workflow
     """
 
-    def __init__(self, config_file:str) -> None:
+    def __init__(self, config_file: str) -> None:
         self.config_file = config_file
 
     def read_config(self):
@@ -59,9 +59,8 @@ def main() -> None:
 
     cfg = ingest.read_config()
 
-    print(cfg['CLAMAV'])
+    print(cfg["CLAMAV"])
 
 
-    
 if __name__ == "__main__":
     main()
