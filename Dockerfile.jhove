@@ -6,4 +6,5 @@ RUN java -jar jhove-latest.jar auto-install.xml
 
 FROM ibmjava:jre-alpine
 COPY --from=build /opt/jhove /opt/jhove
-CMD ["/opt/jhove/jhove"]
+# CMD ["/opt/jhove/jhove"]
+ENTRYPOINT [ "/opt/jhove/jhove" ]
