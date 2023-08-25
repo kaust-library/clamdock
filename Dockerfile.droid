@@ -1,0 +1,3 @@
+FROM ibmjava:jre
+COPY files/droid /opt/droid
+ENTRYPOINT [ "/opt/droid/droid.sh" ]
