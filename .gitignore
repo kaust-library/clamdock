@@ -2,6 +2,7 @@
 
 *cfg
 files/*jar
+files/droid*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
