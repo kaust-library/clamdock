@@ -83,6 +83,18 @@ Starting ClamAV
 (...)
 ```
 
+## Copy Container
+
+Using a container to copy files for the bagIt folder
+
+```
+PS C:\Users\garcm0b\Work> docker run -it --rm --name cp_test `
+>> -v "C:\Users\garcm0b\OneDrive - KAUST\Pictures\social_hour:/src" `
+>> -v "C:\Users\garcm0b\Work\test_cp_container:/dest" `
+>> debian:bookworm-slim cp -pr /src /dest
+PS C:\Users\garcm0b\Work>
+```
+
 ## Jhove
 
 Installing Jhove on the container
