@@ -6,29 +6,21 @@ from subprocess import run, STDOUT, PIPE
 from configparser import ConfigParser, ExtendedInterpolation
 import sys
 
+class ConfigIngestion:
+    def __init__(self) -> None:
+        pass
 
-class Container:
-    """
-    Base class for container execution
-    """
+    def getConfigSections(self) -> list[str]:
+        """
+        Returns a list with the sections available on the config file.
+        """
 
-    def __init__(self, bin_dir: str, exe: str) -> None:
-        self.bin_dir = bin_dir
-        self.exe = exe
+        config = ConfigParser()
+        config.read(ingestion.config_file)
 
+        print(f"ConfigIngestion: sections: {config.sections}")
 
-class Quarantine:
-    pass
-
-
-class anti_virus(Container):
-    def __init__(self, av_dir: str, av_bin: str, config) -> None:
-        super().__init__(bin_dir=av_dir, exe=av_bin)
-        av_update = config.get("av_update")
-        log_dir = config.get("av_logs_root", raw=True)
-        quarantine = config.getint("quarantine", "30")
-        run_it = config.getbool("run_it", "True")
-
+        return config.sections()
 
 class Ingestion:
     """
@@ -37,29 +29,23 @@ class Ingestion:
 
     def __init__(self, config_file: str) -> None:
         self.config_file = config_file
+        self.sections = []
 
-    def read_config(self):
-        """Read the ingestion configuration file"""
-        cfg = ConfigParser(interpolation=ExtendedInterpolation())
-        cfg.read(self.config_file)
-
-        return cfg
+    config = ConfigIngestion()
+    config.getConfigSections()
 
 
+    
 def main() -> None:
     """
     Run a docker container.
     """
 
-    file_cfg = sys.argv[1]
+    config_file = sys.argv[1]
 
     # av_config = read_config(file_cfg, "CLAMAV")
 
-    ingest = Ingestion(file_cfg)
-
-    cfg = ingest.read_config()
-
-    print(cfg["CLAMAV"])
+    Ingestion(config_file)
 
 
 if __name__ == "__main__":
