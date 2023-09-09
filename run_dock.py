@@ -6,6 +6,7 @@ from subprocess import run, STDOUT, PIPE
 from configparser import ConfigParser, ExtendedInterpolation
 import sys
 
+
 class ConfigIngestion:
     def __init__(self) -> None:
         pass
@@ -22,20 +23,26 @@ class ConfigIngestion:
 
         return config.sections()
 
+
+class Accession:
+    """Class with accession ID"""
+
+    def __init__(self) -> None:
+        self.acc_id: str = ""
+
+
 class Ingestion:
     """
     Base class for ingesting objects with the digital preservation workflow
     """
 
     def __init__(self, config_file: str) -> None:
-        self.config_file = config_file
-        self.sections = []
+        pass
 
     config = ConfigIngestion()
     config.getConfigSections()
 
 
-    
 def main() -> None:
     """
     Run a docker container.
