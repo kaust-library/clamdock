@@ -4,6 +4,10 @@
 files/*jar
 files/droid*
 
+# For Airflow
+
+logs/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
