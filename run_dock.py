@@ -2,45 +2,32 @@
 # this is just a wrapper.
 
 
-from subprocess import run, STDOUT, PIPE
-from configparser import ConfigParser, ExtendedInterpolation
+import subprocess as sb
+import configparser as cp
+import pathlib as pl
+import logging as log
 import sys
 
 
-class ConfigIngestion:
-    def __init__(self) -> None:
-        pass
-
-    def getConfigSections(self) -> list[str]:
-        """
-        Returns a list with the sections available on the config file.
-        """
-
-        config = ConfigParser()
-        config.read(ingestion.config_file)
-
-        print(f"ConfigIngestion: sections: {config.sections}")
-
-        return config.sections()
-
-
-class Accession:
-    """Class with accession ID"""
-
-    def __init__(self) -> None:
-        self.acc_id: str = ""
-
-
-class Ingestion:
+def checkAV(av_config):
     """
-    Base class for ingesting objects with the digital preservation workflow
+    Run the antivirus part:
+    1. Run the first time and create a quarantine file
+    2. Check if the quarantine is over:
+    2.1 If quarantine is over, run the antivirus one more time.
+    2.2 If ingestion is still under quarantine, just exit.
     """
 
-    def __init__(self, config_file: str) -> None:
-        pass
+    quarentine_dir = pl.Path(av_config["quarantine_dir"])
+    if not quarentine_dir.exists():
+        log.warning(f"Creating quarantine dir '{quarentine_dir}'")
+        quarentine_dir.mkdir()
 
-    config = ConfigIngestion()
-    config.getConfigSections()
+    quarentine_file = (
+        pl.Path(pl.Path.cwd())
+        .joinpath(av_config["quarantine_dir"])
+        .joinpath(av_config["av_accession"])
+    )
 
 
 def main() -> None:
@@ -52,7 +39,19 @@ def main() -> None:
 
     # av_config = read_config(file_cfg, "CLAMAV")
 
-    Ingestion(config_file)
+    log.info(f"Reading configuration file '{config_file}'")
+    config = cp.ConfigParser(interpolation=cp.ExtendedInterpolation())
+    config.read(config_file)
+
+    config["CLAMAV"].update({"av_location": config["BAGGER"]["source_dir"]})
+    config["CLAMAV"].update({"av_accession": config["ACCESSION"]["accession_id"]})
+    config["CLAMAV"].update({"quarantine_dir": "quarantine"})
+
+    #
+    # ClamAV
+
+    #
+    # Copy source files to destination folder
 
 
 if __name__ == "__main__":
