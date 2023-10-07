@@ -33,12 +33,17 @@ import sys
 
 def runAV(av_config):
     dt_run_av = dt.datetime.today().strftime("%Y%m%d")
+
+    #
+    # Update antivirus database.
     log.info("Updating AV database")
     av_update = """docker run -it --rm 
     --name fresh_clam_db --mount source=clam_db,target=/var/lib/clamav 
     clamav/clamav:latest freshclam"""
-
     result = sp.run(av_update, stdout=sp.PIPE, stderr=sp.STDOUT, text=True)
+
+    #
+    # Antivirus.
     av_log_file = f"clamAVlog{av_config['av_accession']}_{dt_run_av}.txt"
     docker_run = f"docker run -it --rm --name aa_docker"
     docker_target = f"-v \"{av_config['av_location']}:/scandir\""
