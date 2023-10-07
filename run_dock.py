@@ -38,7 +38,7 @@ def runAV(av_config):
     --name fresh_clam_db --mount source=clam_db,target=/var/lib/clamav 
     clamav/clamav:latest freshclam"""
 
-    result = sp.run(av_update, stdout=p.PIPE, stderr=sp.STDOUT, text=True)
+    result = sp.run(av_update, stdout=sp.PIPE, stderr=sp.STDOUT, text=True)
     av_log_file = f"clamAVlog{av_config['av_accession']}_{dt_run_av}.txt"
     docker_run = f"docker run -it --rm --name aa_docker"
     docker_target = f"-v \"{av_config['av_location']}:/scandir\""
