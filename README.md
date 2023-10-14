@@ -95,6 +95,32 @@ PS C:\Users\garcm0b\Work> docker run -it --rm --name cp_test `
 PS C:\Users\garcm0b\Work>
 ```
 
+## BagIt
+
+### Building 
+
+Build the container using the `Dockerfile.bagit`
+
+```
+PS C:\Users\mgarcia\Work\clamdock> docker build -f Dockerfile.bagit -t mybagit .
+[+] Building 3.0s (6/6) FINISHED                                                                                    docker:default
+ => [internal] load .dockerignore                                                                                             0.0s
+ => => transferring context: 2B
+ (...)
+```
+
+### Running
+
+After building the container, you can use it to create a _bag_ file
+
+```
+PS C:\Users\mgarcia\Work\clamdock> mkdir mybag
+PS C:\Users\mgarcia\Work\clamdock> docker run -it --rm -v "C:\Users\mgarcia\Work\clamdock\mybag:/mydir" --name mgbagit mybagit bagit.py --contact-name 'john' /mydir
+2023-10-14 17:38:37,726 - INFO - Creating bag for directory /mydir
+2023-10-14 17:38:37,733 - INFO - Creating data directory
+(...)
+```
+
 ## Jhove
 
 Installing Jhove on the container
