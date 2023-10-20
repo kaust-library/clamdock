@@ -2,6 +2,6 @@ FROM python:3.11-bookworm
 
 RUN pip install bagit
 
-COPY app/bagdata.py /app
+COPY ./app /app
 
 ENTRYPOINT [ "python" ,"/app/bagdata.py"]
