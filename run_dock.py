@@ -107,6 +107,19 @@ def main() -> None:
     log.info("Copying files")
     copyFiles(config["BAGGER"])
 
+    BagIt_test = {
+        "Source-Organization": "KAUST",
+        "External-Identifier": "My External Identifier",
+        "Internal-Sender-Description": "My Internal Sender",
+        "Title": "Test Title",
+        "Date-Start": "2020-10-10",
+        "Record-Creators": "Marcelo",
+        "Record-Type": "Photos",
+        "Extend-Size": "23456",
+        "Subjects": "My subjects",
+        "Office": "Library",
+    }
+
 
 if __name__ == "__main__":
     main()
