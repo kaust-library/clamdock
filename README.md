@@ -103,8 +103,9 @@ Build the container using the `Dockerfile.bagit`
 
 ```
 PS C:\Users\mgarcia\Work\clamdock> docker build -f Dockerfile.bagit -t mybagit .
-[+] Building 3.0s (6/6) FINISHED                                                                                    docker:default
- => [internal] load .dockerignore                                                                                             0.0s
+[+] Building 3.0s (6/6) FINISHED
+docker:default
+ => [internal] load .dockerignore                                0.0s
  => => transferring context: 2B
  (...)
 ```
