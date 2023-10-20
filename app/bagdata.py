@@ -13,10 +13,12 @@ def main():
         "Record-Type": f"{environ['RECORD_TYPE']}",
         "Extend-Size": f"{environ['EXTEND_SIZE']}",
         "Subjects": f"{environ['SUBJECTS']}",
-        "Office": f"{environ['OFFICE']}",
+        "Office": f"{environ['OFFICE']}"
     }
 
-    print(BagIt_test["Source-Organization"])
+    print(environ['SOURCE_ORGANIZATION'])
+
+    print(BagIt_test)
 
 
 if __name__ == "__main__":
