@@ -10,27 +10,6 @@ import logging as log
 import sys
 
 
-# def checkAV(av_config):
-#     """
-#     Run the antivirus part:
-#     1. Run the first time and create a quarantine file
-#     2. Check if the quarantine is over:
-#     2.1 If quarantine is over, run the antivirus one more time.
-#     2.2 If ingestion is still under quarantine, just exit.
-#     """
-
-#     quarentine_dir = pl.Path(av_config["quarantine_dir"])
-#     if not quarentine_dir.exists():
-#         log.warning(f"Creating quarantine dir '{quarentine_dir}'")
-#         quarentine_dir.mkdir()
-
-#     quarentine_file = (
-#         pl.Path(pl.Path.cwd())
-#         .joinpath(av_config["quarantine_dir"])
-#         .joinpath(av_config["av_accession"])
-#     )
-
-
 def runAV(av_config):
     dt_run_av = dt.datetime.today().strftime("%Y%m%d")
 
@@ -80,6 +59,9 @@ def copyFiles(f_config):
         result.returncode
 
 
+def createBag(config, bag_data):
+    pass
+
 def main() -> None:
     #
     # Logging
@@ -100,7 +82,7 @@ def main() -> None:
 
     #
     # ClamAV
-    # runAV(config['CLAMAV'])
+    runAV(config['CLAMAV'])
 
     #
     # Copy source files to destination folder
@@ -120,6 +102,8 @@ def main() -> None:
         "Office": "Library",
     }
 
+    log.info("Creating bag")
+    createBag(config['BAGGER'], BagIt_test
 
 if __name__ == "__main__":
     main()
