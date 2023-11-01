@@ -79,7 +79,8 @@ def copyFiles(f_config):
         result = sp.run(copy_files, stdout=sp.PIPE, stderr=sp.STDOUT)
         result.returncode
 
-
+def createBag(config, Bag):
+    
 def main() -> None:
     #
     # Logging
@@ -100,7 +101,7 @@ def main() -> None:
 
     #
     # ClamAV
-    # runAV(config['CLAMAV'])
+    runAV(config["CLAMAV"])
 
     #
     # Copy source files to destination folder
@@ -120,6 +121,8 @@ def main() -> None:
         "Office": "Library",
     }
 
+
+    createBag(config["BAGGER"], BagIt_test)
 
 if __name__ == "__main__":
     main()
