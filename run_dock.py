@@ -58,7 +58,6 @@ def copyFiles(f_config):
         result = sp.run(copy_files, stdout=sp.PIPE, stderr=sp.STDOUT)
         result.returncode
 
-
 def createBag(config, bag_data):
     pass
 
@@ -104,6 +103,8 @@ def main() -> None:
 
     log.info("Creating bag")
     createBag(config['BAGGER'], BagIt_test
+
+    createBag(config["BAGGER"], BagIt_test)
 
 if __name__ == "__main__":
     main()
