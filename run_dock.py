@@ -102,8 +102,6 @@ def main() -> None:
     }
 
     log.info("Creating bag")
-    createBag(config['BAGGER'], BagIt_test
-
     createBag(config["BAGGER"], BagIt_test)
 
 if __name__ == "__main__":
