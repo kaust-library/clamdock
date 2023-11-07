@@ -59,7 +59,11 @@ def copyFiles(f_config):
         result.returncode
 
 def createBag(config, bag_data):
-    pass
+    
+    docker_env = """
+        -e SOURCE_ORGANIZATION=f"{bag-data['Source-Organization']}" \
+        -e 
+    """
 
 def main() -> None:
     #
