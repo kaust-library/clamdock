@@ -1,72 +1,6 @@
 # Clamdock
 
- Running ClamAV inside Docker
-
-## ER Diagram
-
-```mermaid
-erDiagram
-    Ingestion || --|| AnvitVirus : scan
-    AnvitVirus || -- || Quarantine : wait
-    Quarantine || -- || AnvitVirus : run
-    Ingestion || -- || Bag : create
-    Bag || -- || DROID : metadata
-    Bag || -- || JHOVE : metadata
-```
-
-## Class Diagram
-
-```mermaid
-classDiagram
-    Ingestion *-- AntiVirus
-    Ingestion o-- Bag
-    AntiVirus *-- Quarantine
-    Bag o-- Metadata
-    Metadata <|-- Droid
-    Metadata <|-- JHove
-
-    class Ingestion
-    Ingestion: str AccessionID
-
-    class AntiVirus
-    AntiVirus: str BinDir
-    AntiVirus: str ExeUpdate
-    AntiVirus: str ExeScan
-    AntiVirus: str LogDir
-    AntiVirus: str LogFile
-    AntiVirus: run()
-
-    class Quarantine
-    Quarantine: str quarFile
-    Quarantine: int quarDays
-    Quarantine: check()
-
-    class Bag
-    Bag: list SourceDirs
-    Bag: str SourceDir
-    Bag: str DestDir
-    Bag: run()
-    Bag: copy(src, dest)
-
-    class Metadata
-    Metadata: str BaseDir
-    Metadata: str BaseBin
-    Metadata: List[options]
-
-    class Droid
-    Droid: str DroidDir
-    Droid: str DroidExe
-    Droid: bool keepProfile
-    Droid: run()
-
-    class JHove
-    JHove: str JHoveDir
-    JHove: str JHoveExe
-    JHove: bool JHoveXML
-    JHove: list JHoveModules
-    JHove: run()
-```
-
+Running ClamAV inside Docker
 
 ## Running Container
 
@@ -97,7 +31,7 @@ PS C:\Users\garcm0b\Work>
 
 ## BagIt
 
-### Building 
+### Building
 
 Build the container using the `Dockerfile.bagit`
 
@@ -135,14 +69,14 @@ Jhove (Rel. 1.28.0, 2023-05-18)
  App:
   API: 1.28.0, 2023-05-18
   Configuration: /opt/jhove/conf/jhove.conf
-(...)  
+(...)
 ```
 
 Or building, and running, our own container with Jhove
 
 ```
 PS C:\Users\garcm0b\Work\clamdock> docker build -f Dockerfile.jhove -t myjhove .
-PS C:\Users\garcm0b\Work\clamdock> docker run -it --rm -v 'C:\Users\mgarcia\Documents:/myfiles' --name mgjhove myjhove -m PDF-hul /myfiles/2020.nlpcovid19-acl.1.pdf 
+PS C:\Users\garcm0b\Work\clamdock> docker run -it --rm -v 'C:\Users\mgarcia\Documents:/myfiles' --name mgjhove myjhove -m PDF-hul /myfiles/2020.nlpcovid19-acl.1.pdf
 Jhove (Rel. 1.28.0, 2023-05-18)
  Date: 2023-08-25 14:54:58 GMT
  RepresentationInformation: /myfiles/2020.nlpcovid19-acl.1.pdf
@@ -152,7 +86,7 @@ Jhove (Rel. 1.28.0, 2023-05-18)
   Format: PDF
   Version: 1.5
   Status: Well-Formed and valid
-  (...)  
+  (...)
 ```
 
 ## DROID
