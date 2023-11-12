@@ -2,6 +2,20 @@
 
 Running ClamAV inside Docker
 
+## Apache Airflow
+
+Running Airflow on Linux requires [setting AIRFLOW_UID](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user):
+
+```
+a-garcm0b@library-docker-test:~/Work/clamdock$ AIRFLOW_UID=50000
+a-garcm0b@library-docker-test:~/Work/clamdock$ mkdir -p ./dags ./logs ./plugins ./config
+a-garcm0b@library-docker-test:~/Work/clamdock$ echo -e "AIRFLOW_UID=$(id -u)" > .env
+a-garcm0b@library-docker-test:~/Work/clamdock$ docker compose up
+[+] Running 7/7
+✔ Container clamdock-postgres-1           Created
+(...)
+```
+
 ## Running Container
 
 Running the ClamAV container directly from command line as test.
