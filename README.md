@@ -16,6 +16,16 @@ a-garcm0b@library-docker-test:~/Work/clamdock$ docker compose up
 (...)
 ```
 
+### Port Forwarding
+
+To access from a Windows computer the Airflow running on ELK one needs to use port forwarding:
+
+```
+PS C:\Users\garcm0b\Work\clamdock> ssh -L 8080:localhost:8080 elk
+```
+
+> ELK is semi official test server for the library systems team.
+
 ## Running Container
 
 Running the ClamAV container directly from command line as test.
