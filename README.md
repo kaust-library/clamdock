@@ -4,39 +4,6 @@ Running ClamAV inside Docker
 
 ## Apache Airflow
 
-Running Airflow on Linux requires [setting AIRFLOW_UID](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user):
-
-```
-a-garcm0b@library-docker-test:~/Work/clamdock$ AIRFLOW_UID=50000
-a-garcm0b@library-docker-test:~/Work/clamdock$ mkdir -p ./dags ./logs ./plugins ./config
-a-garcm0b@library-docker-test:~/Work/clamdock$ echo -e "AIRFLOW_UID=$(id -u)" > .env
-a-garcm0b@library-docker-test:~/Work/clamdock$ docker compose up
-[+] Running 7/7
-✔ Container clamdock-postgres-1           Created
-(...)
-```
-
-### Port Forwarding
-
-To access from a Windows computer the Airflow running on ELK one needs to use [port forwarding](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding):
-
-```
-PS C:\Users\garcm0b\Work\clamdock> ssh -L 8080:localhost:8080 elk
-```
-
-It's possible to put the port forwarding on the `ssh_config` file:
-
-```
-Host airflow
-    Hostname 10.254.147.159
-    LocalForward 8080 localhost:8080 <--- port forwarding
-    User a-garcm0b
-```
-
-So when we ssh to _airflow_ we are connecting to `elk` with port forwarding.
-
-> ELK is semi official test server for the library systems team.
-
 ### Project Structire
 
 ```
@@ -59,6 +26,43 @@ The folders are organized as follows:
 * `airflow` for Airflow related files, like _dags_ and docker compose files.
 * `app` the code for script that will be in the container.
 * `files`, used to create the containers.
+
+### Setting the Environment
+
+Running Airflow on Linux requires [setting AIRFLOW_UID](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user):
+
+```
+a-garcm0b@library-docker-test:~/Work/clamdock$ cd airflow/                                                                                                 a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ AIRFLOW_UID=50000
+a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ mkdir -p ./dags ./logs ./plugins ./config                                                           a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ echo -e "AIRFLOW_UID=$(id -u)" > .en                                                                a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.7.3/docker-compose.yaml'
+a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ docker compose up airflow-init
+[+] Running 42/42
+ ✔ airflow-init 19 layers [⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled
+ (...)
+ (...) 
+ (...)
+a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ docker compose up -d
+```
+
+### Port Forwarding
+
+To access from a Windows computer the Airflow running on ELK one needs to use [port forwarding](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding):
+
+```
+PS C:\Users\garcm0b\Work\clamdock> ssh -L 8080:localhost:8080 elk
+```
+
+It's possible to put the port forwarding on the `ssh_config` file:
+
+```
+Host airflow
+    Hostname 10.254.147.159
+    LocalForward 8080 localhost:8080 <--- port forwarding
+    User a-garcm0b
+```
+
+So when we ssh to _airflow_ we are connecting to `elk` with port forwarding.
+
+> ELK is semi official test server for the library systems team.
 
 ## Running Container
 
