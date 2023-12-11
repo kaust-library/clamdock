@@ -24,7 +24,41 @@ To access from a Windows computer the Airflow running on ELK one needs to use [p
 PS C:\Users\garcm0b\Work\clamdock> ssh -L 8080:localhost:8080 elk
 ```
 
+It's possible to put the port forwarding on the `ssh_config` file:
+
+```
+Host airflow
+    Hostname 10.254.147.159
+    LocalForward 8080 localhost:8080 <--- port forwarding
+    User a-garcm0b
+```
+
+So when we ssh to _airflow_ we are connecting to `elk` with port forwarding.
+
 > ELK is semi official test server for the library systems team.
+
+### Project Structire
+
+```
+PS C:\Users\garcm0b\Work\clamdock> tree .
+Folder PATH listing
+Volume serial number is 00000202 BA4D:E7D0
+C:\USERS\GARCM0B\WORK\CLAMDOCK
+├───airflow
+│   └───dags
+├───app
+└───files
+    └───bagit-v4.12.3
+        ├───bin
+        └───conf
+PS C:\Users\garcm0b\Work\clamdock>
+```
+
+The folders are organized as follows:
+
+* `airflow` for Airflow related files, like _dags_ and docker compose files.
+* `app` the code for script that will be in the container.
+* `files`, used to create the containers.
 
 ## Running Container
 
