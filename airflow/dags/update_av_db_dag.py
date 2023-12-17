@@ -17,5 +17,4 @@ with DAG(
         mounts=[
             ("clam_db", "/var/lib/clamav"),
         ],
-        network_mode="airflow",
     )
