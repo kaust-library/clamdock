@@ -15,6 +15,7 @@ with DAG(
         container_name="fresh_clam_db",
         xcom_all=False,
         mount_tmp_dir=False,
+        docker_url="unix://var/run/docker.sock",
         image="clamav/clamav:latest",
         command=[
             "freshclam",
