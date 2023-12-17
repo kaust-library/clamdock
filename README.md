@@ -64,7 +64,23 @@ So when we ssh to _airflow_ we are connecting to `elk` with port forwarding.
 
 > ELK is semi official test server for the library systems team.
 
-## Running Container
+## ClamAV Container
+
+### Persisting the Virus Database
+
+Creating a volume for [persisting the virus database](https://docs.clamav.net/manual/Installing/Docker.html#persisting-the-virus-database-volume):
+
+```
+a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ docker volume create clamdb
+clamdb
+a-garcm0b@library-docker-test:~/Work/clamdock/airflow$
+```
+
+### Update Virus Database
+
+Next we update the virus database
+
+### Scanning a Folder
 
 Running the ClamAV container directly from command line as test.
 
@@ -73,7 +89,12 @@ The container will mount the local file system with mount _bind_.
 Running from command line. Interestingly when there is a space in the path, docker only works with `-v` option
 
 ```
-docker run  --rm --name clam_test -v 'C:\Users\garcm0b\Downloads\autoarchive\2018batch\Image_Files\Image Files\Heno:/scandir' -v 'C:\Users\garcm0b\Downloads\Work_Test:/log' clamav/clamav:latest clamscan /scandir  --verbose  --recursive=yes  --alert --log=/log/test.txt
+docker run  --rm --name clam_test \
+-v 'C:\Users\garcm0b\Downloads\autoarchive\2018batch\Image_Files\Image Files\Heno:/scandir' \
+-v 'C:\Users\garcm0b\Downloads\Work_Test:/log' \
+clamav/clamav:latest clamscan /scandir  \
+--verbose  --recursive=yes  --alert \
+--log=/log/test.txt
 Starting Freshclamd
 Starting ClamAV
 (...)
