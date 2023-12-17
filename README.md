@@ -29,6 +29,24 @@ The folders are organized as follows:
 
 ### Setting the Environment
 
+[Setting permission](http://www.pythonblackhole.com/blog/article/50879/47a8e8f879d6db82b5d2/) of `x-airflow-common` on `docker-compose`:
+
+```
+x-airflow-common:
+  &airflow-common
+(...)
+    - /var/run/docker.sock:/var/run/docker.sock
+  # user: "${AIRFLOW_UID:-50000}:0"
+  user: root
+```
+
+Restarting `airflow`
+
+```
+docker-compose up airflow-init
+docker-compose up -d
+```
+
 Running Airflow on Linux requires [setting AIRFLOW_UID](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user):
 
 ```
