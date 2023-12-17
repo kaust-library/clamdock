@@ -17,7 +17,7 @@ with DAG(
         mount_tmp_dir=False,
         docker_url="unix://var/run/docker.sock",
         image="clamav/clamav:latest",
-        command="freshclam"
+        command="freshclam",
         mounts=[
             ("/var/lib/clamav","clam_db")
         ],
