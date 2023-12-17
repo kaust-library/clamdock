@@ -12,7 +12,7 @@ with DAG(
             "freshclam",
         ],
         mounts=[
-            (source="clam_db", target="/var/lib/clamav"),
+            ("clam_db", "/var/lib/clamav"),
         ],
         network_mode="airflow",
     )
