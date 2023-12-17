@@ -11,6 +11,8 @@ with DAG(
         command=[
             "freshclam",
         ],
-        mounts=(source="clam_db", target="/var/lib/clamav"),
+        mounts=[
+            (source="clam_db", target="/var/lib/clamav"),
+        ],
         network_mode="airflow",
     )
