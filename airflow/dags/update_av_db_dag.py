@@ -21,6 +21,6 @@ with DAG(
             "freshclam",
         ],
         mounts=[
-            ("clam_db", "/var/lib/clamav"),
+            ("/var/lib/clamav","clam_db"),
         ],
     )
