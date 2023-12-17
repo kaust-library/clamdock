@@ -6,7 +6,7 @@ files/droid*
 
 # For Airflow
 
-logs/*
+airflow/logs/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
