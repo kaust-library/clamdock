@@ -13,6 +13,8 @@ with DAG(
         auto_remove=True,
         tty=True,
         container_name="fresh_clam_db",
+        xcom_all=False,
+        mount_tmp_dir=False,
         image="clamav/clamav:latest",
         command=[
             "freshclam",
