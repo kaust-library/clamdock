@@ -10,7 +10,10 @@ with DAG(
 ) as dag:
     update_db = DockerOperator(
         task_id="update_db",
-        image="clamav/clamav",
+        auto_remove=True,
+        tty=True,
+        container_name="fresh_clam_db",
+        image="clamav/clamav:latest",
         command=[
             "freshclam",
         ],
