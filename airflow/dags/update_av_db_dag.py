@@ -19,6 +19,6 @@ with DAG(
         image="clamav/clamav:latest",
         command="freshclam",
         mounts=[
-            ("/var/lib/clamav","clam_db")
+            ("/var/lib/clamav","clamdb")
         ],
     )
