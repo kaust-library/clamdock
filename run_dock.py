@@ -3,12 +3,13 @@
 
 
 import subprocess as sp
-import configparser as cp
+
 import pathlib as pl
 import datetime as dt
 import logging as log
 import sys
 
+from configparser import ConfigParser, ExtendedInterpolation
 
 def runAV(av_config):
     dt_run_av = dt.datetime.today().strftime("%Y%m%d")
@@ -16,8 +17,8 @@ def runAV(av_config):
     #
     # Update antivirus database.
     log.info("Updating AV database")
-    av_update = """docker run -it --rm 
-    --name fresh_clam_db --mount source=clam_db,target=/var/lib/clamav 
+    av_update = """docker run -it --rm --name 'freshclamdb' 
+    --mount source=clamdb,target=/var/lib/clamav 
     clamav/clamav:latest freshclam"""
     result = sp.run(av_update, stdout=sp.PIPE, stderr=sp.STDOUT, text=True)
 
@@ -76,7 +77,7 @@ def main() -> None:
     #
     # Set system configuration
     log.info(f"Reading configuration file '{config_file}'")
-    config = cp.ConfigParser(interpolation=cp.ExtendedInterpolation())
+    config = ConfigParser(interpolation=ExtendedInterpolation())
     config.read(config_file)
 
     config["CLAMAV"].update({"av_location": config["BAGGER"]["source_dir"]})

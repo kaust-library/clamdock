@@ -50,8 +50,11 @@ docker-compose up -d
 Running Airflow on Linux requires [setting AIRFLOW_UID](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user):
 
 ```
-a-garcm0b@library-docker-test:~/Work/clamdock$ cd airflow/                                                                                                 a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ AIRFLOW_UID=50000
-a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ mkdir -p ./dags ./logs ./plugins ./config                                                           a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ echo -e "AIRFLOW_UID=$(id -u)" > .en                                                                a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.7.3/docker-compose.yaml'
+a-garcm0b@library-docker-test:~/Work/clamdock$ cd airflow/
+a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ AIRFLOW_UID=50000
+a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ mkdir -p ./dags ./logs ./plugins ./config
+a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ echo -e "AIRFLOW_UID=$(id -u)" > .en
+a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.7.3/docker-compose.yaml'
 a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ docker compose up airflow-init
 [+] Running 42/42
  ✔ airflow-init 19 layers [⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled
@@ -97,6 +100,8 @@ a-garcm0b@library-docker-test:~/Work/clamdock/airflow$
 ### Update Virus Database
 
 Next we update the virus database
+
+
 
 ### Scanning a Folder
 
