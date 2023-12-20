@@ -69,7 +69,7 @@ def createBag(config, bag_data):
 def main() -> None:
     #
     # Logging
-    log.basicConfig(level=log.INFO, format="%(asctime)s %(message)s")
+    log.basicConfig(level=log.INFO)
     #
     # Input file
     try:
