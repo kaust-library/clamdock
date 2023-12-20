@@ -28,7 +28,7 @@ def runAV(av_config):
     docker_run = f"docker run --rm --name aa_docker"
     docker_target = f"-v \"{av_config['av_location']}:/scandir\""
     docker_log_target = f"-v \"{av_config['av_logs_root']}:/logs\""
-    clam_db = "--mount source=clam_db,target=/var/lib/clamav"
+    clam_db = "--mount source=clamdb,target=/var/lib/clamav"
     clam_run = "clamav/clamav:latest clamscan /scandir"
     clam_options = " --recursive=yes --verbose"
     log_av = f"--log=/logs/{av_log_file}"
