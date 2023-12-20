@@ -101,7 +101,12 @@ a-garcm0b@library-docker-test:~/Work/clamdock/airflow$
 
 Next we update the virus database
 
-
+```
+docker run -it --rm \
+--name 'freshclamdb' \
+--mount source=clamdb,target=/var/lib/clamav \
+clamav/clamav:latest freshclam
+```
 
 ### Scanning a Folder
 
