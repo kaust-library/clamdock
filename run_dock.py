@@ -72,7 +72,10 @@ def main() -> None:
     log.basicConfig(level=log.INFO, format="%(asctime)s %(message)s")
     #
     # Input file
-    config_file = sys.argv[1]
+    try:
+        config_file = sys.argv[1]
+    except IndexError:
+        log.error("Input file must be provided")
 
     #
     # Set system configuration
@@ -87,6 +90,10 @@ def main() -> None:
     #
     # ClamAV
     runAV(config['CLAMAV'])
+
+    #
+    # TODO
+    # Add quarantine.
 
     #
     # Copy source files to destination folder
