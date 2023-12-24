@@ -4,12 +4,14 @@
 
 import subprocess as sp
 
-import pathlib as pl
 import datetime as dt
 import logging as log
 import sys
 
+
 from configparser import ConfigParser, ExtendedInterpolation
+from pathlib import Path
+
 
 def runAV(av_config):
     dt_run_av = dt.datetime.today().strftime("%Y%m%d")
@@ -21,11 +23,13 @@ def runAV(av_config):
     --mount source=clamdb,target=/var/lib/clamav 
     clamav/clamav:latest freshclam"""
     result = sp.run(av_update, stdout=sp.PIPE, stderr=sp.STDOUT, text=True)
+    log.info("Update of AV database done")
 
     #
     # Antivirus.
+    log.info("AV Scanning ")
     av_log_file = f"clamAVlog{av_config['av_accession']}_{dt_run_av}.txt"
-    docker_run = f"docker run --rm --name aa_docker"
+    docker_run = f"docker run --rm --name clamAV"
     docker_target = f"-v \"{av_config['av_location']}:/scandir\""
     docker_log_target = f"-v \"{av_config['av_logs_root']}:/logs\""
     clam_db = "--mount source=clamdb,target=/var/lib/clamav"
@@ -36,7 +40,6 @@ def runAV(av_config):
     log.info(f"Antivirus check: {av_check}")
     result = sp.run(av_check, stdout=sp.PIPE, stderr=sp.STDOUT)
     result.check_returncode
-    av_log = result.stdout
 
 
 def copyFiles(f_config):
@@ -48,23 +51,27 @@ def copyFiles(f_config):
     docker_run = "docker run --rm --name copy_files"
     docker_target = f"-v {dest}:/dest"
     docker_image = "debian:bookworm-slim"
-    copy_cmd = "cp -pr /src /dest"
 
     for ss in src:
         log.info(f"Copying files from '{ss}' to '{dest}'")
-        docker_source = f"-v {ss}:/src"
+        ss_name = Path(ss).name
+        docker_source = f"-v {ss}:/{ss_name}"
+        copy_cmd = f"cp -pr /{ss_name} /dest"
+
         copy_files = (
             f"{docker_run} {docker_source} {docker_target} {docker_image} {copy_cmd}"
         )
+        log.info(f"Running command: {copy_files}")
         result = sp.run(copy_files, stdout=sp.PIPE, stderr=sp.STDOUT)
         result.returncode
 
+
 def createBag(config, bag_data):
-    
     docker_env = """
         -e SOURCE_ORGANIZATION=f"{bag-data['Source-Organization']}" \
         -e 
     """
+
 
 def main() -> None:
     #
@@ -86,14 +93,14 @@ def main() -> None:
     except UnboundLocalError as ee:
         log.error("Variable with file has a problem")
         raise
-    
+
     config["CLAMAV"].update({"av_location": config["BAGGER"]["source_dir"]})
     config["CLAMAV"].update({"av_accession": config["ACCESSION"]["accession_id"]})
     config["CLAMAV"].update({"quarantine_dir": "quarantine"})
 
     #
     # ClamAV
-    runAV(config['CLAMAV'])
+    runAV(config["CLAMAV"])
 
     #
     # TODO
@@ -119,6 +126,7 @@ def main() -> None:
 
     log.info("Creating bag")
     createBag(config["BAGGER"], BagIt_test)
+
 
 if __name__ == "__main__":
     main()
