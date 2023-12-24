@@ -79,10 +79,14 @@ def main() -> None:
 
     #
     # Set system configuration
-    log.info(f"Reading configuration file '{config_file}'")
-    config = ConfigParser(interpolation=ExtendedInterpolation())
-    config.read(config_file)
-
+    try:
+        log.info(f"Reading configuration file '{config_file}'")
+        config = ConfigParser(interpolation=ExtendedInterpolation())
+        config.read(config_file)
+    except UnboundLocalError as ee:
+        log.error("Variable with file has a problem")
+        raise
+    
     config["CLAMAV"].update({"av_location": config["BAGGER"]["source_dir"]})
     config["CLAMAV"].update({"av_accession": config["ACCESSION"]["accession_id"]})
     config["CLAMAV"].update({"quarantine_dir": "quarantine"})
