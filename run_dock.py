@@ -49,13 +49,16 @@ def copyFiles(f_config):
     #
     # Docker container to copy files
     docker_run = "docker run --rm --name copy_files"
-    docker_target = f"-v {dest}:/dest"
+    docker_target = f"-v \"{dest}:/dest\""
     docker_image = "debian:bookworm-slim"
 
     for ss in src:
         log.info(f"Copying files from '{ss}' to '{dest}'")
         ss_name = Path(ss).name
-        docker_source = f"-v {ss}:/{ss_name}"
+        if not Path(ss).is_dir():
+            log.critical(f"Source '{ss}' is not a directory is not accessible")
+            raise Exception("Source directory invalid")
+        docker_source = f"-v \"{ss}:/{ss_name}\""
         copy_cmd = f"cp -pr /{ss_name} /dest"
 
         copy_files = (
@@ -91,12 +94,13 @@ def main() -> None:
         config = ConfigParser(interpolation=ExtendedInterpolation())
         config.read(config_file)
     except UnboundLocalError as ee:
-        log.error("Variable with file has a problem")
-        raise
+        log.error("Probably the config file parameter was not provded")
+        raise Exception("Variable with file has a problem")
 
     config["CLAMAV"].update({"av_location": config["BAGGER"]["source_dir"]})
     config["CLAMAV"].update({"av_accession": config["ACCESSION"]["accession_id"]})
     config["CLAMAV"].update({"quarantine_dir": "quarantine"})
+
 
     #
     # ClamAV
