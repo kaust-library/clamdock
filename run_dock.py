@@ -2,8 +2,6 @@
 # this is just a wrapper.
 
 
-import subprocess as sp
-
 import datetime as dt
 import logging as log
 import sys
@@ -12,6 +10,7 @@ import sys
 from configparser import ConfigParser, ExtendedInterpolation
 from pathlib import Path
 from typing import List
+from subprocess import run, PIPE, STDOUT
 
 
 def str2list(ss: str) -> List:
@@ -31,7 +30,7 @@ def runAV(av_config):
     av_update = """docker run -it --rm --name 'freshclamdb' 
     --mount source=clamdb,target=/var/lib/clamav 
     clamav/clamav:latest freshclam"""
-    result = sp.run(av_update, stdout=sp.PIPE, stderr=sp.STDOUT, text=True)
+    result = run(av_update, stdout=PIPE, stderr=STDOUT, text=True)
     log.info("Update of AV database done")
 
     #
@@ -51,7 +50,7 @@ def runAV(av_config):
         av_check = f"{docker_run} {docker_target} {docker_log_target} {clam_db} {clam_run} {log_av} {clam_options}"
         log.info(f"AV scanning: '{av_target_dir}'")
         log.debug(f"Antivirus check: {av_check}")
-        result = sp.run(av_check, stdout=sp.PIPE, stderr=sp.STDOUT)
+        result = run(av_check, stdout=PIPE, stderr=STDOUT)
         result.check_returncode
 
 
@@ -79,7 +78,7 @@ def copyFiles(f_config):
             f"{docker_run} {docker_source} {docker_target} {docker_image} {copy_cmd}"
         )
         log.debug(f"Running command: {copy_files}")
-        result = sp.run(copy_files, stdout=sp.PIPE, stderr=sp.STDOUT)
+        result = run(copy_files, stdout=PIPE, stderr=STDOUT)
         result.returncode
 
 
