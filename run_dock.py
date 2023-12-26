@@ -11,6 +11,15 @@ import sys
 
 from configparser import ConfigParser, ExtendedInterpolation
 from pathlib import Path
+from typing import List
+
+
+def str2list(ss: str) -> List:
+    """
+    Convert a comma separated string ("aa, bb, cc") into a list ['aa', 'bb', 'cc'].
+    """
+
+    return [sss.strip() for sss in ss.split(",")]
 
 
 def runAV(av_config):
@@ -27,29 +36,34 @@ def runAV(av_config):
 
     #
     # Antivirus.
-    log.info("AV Scanning ")
     av_log_file = f"clamAVlog{av_config['av_accession']}_{dt_run_av}.txt"
     docker_run = f"docker run --rm --name clamAV"
-    docker_target = f"-v \"{av_config['av_location']}:/scandir\""
     docker_log_target = f"-v \"{av_config['av_logs_root']}:/logs\""
     clam_db = "--mount source=clamdb,target=/var/lib/clamav"
-    clam_run = "clamav/clamav:latest clamscan /scandir"
     clam_options = " --recursive=yes --verbose"
     log_av = f"--log=/logs/{av_log_file}"
-    av_check = f"{docker_run} {docker_target} {docker_log_target} {clam_db} {clam_run} {log_av} {clam_options}"
-    log.info(f"Antivirus check: {av_check}")
-    result = sp.run(av_check, stdout=sp.PIPE, stderr=sp.STDOUT)
-    result.check_returncode
+
+    av_target_list = str2list(av_config["av_location"])
+    for av_target_dir in av_target_list:
+        docker_target_name = Path(av_target_dir).name
+        docker_target = f'-v "{av_target_dir}:/{docker_target_name}"'
+        clam_run = f"clamav/clamav:latest clamscan /{docker_target_name}"
+        av_check = f"{docker_run} {docker_target} {docker_log_target} {clam_db} {clam_run} {log_av} {clam_options}"
+        log.info(f"AV scanning: '{av_target_dir}'")
+        log.debug(f"Antivirus check: {av_check}")
+        result = sp.run(av_check, stdout=sp.PIPE, stderr=sp.STDOUT)
+        result.check_returncode
 
 
 def copyFiles(f_config):
-    src = [ff.strip() for ff in f_config["source_dir"].split(",")]
+    # src = [ff.strip() for ff in f_config["source_dir"].split(",")]
+    src = str2list(f_config["source_dir"])
     dest = f_config["dest_dir"]
 
     #
     # Docker container to copy files
     docker_run = "docker run --rm --name copy_files"
-    docker_target = f"-v \"{dest}:/dest\""
+    docker_target = f'-v "{dest}:/dest"'
     docker_image = "debian:bookworm-slim"
 
     for ss in src:
@@ -58,13 +72,13 @@ def copyFiles(f_config):
         if not Path(ss).is_dir():
             log.critical(f"Source '{ss}' is not a directory is not accessible")
             raise Exception("Source directory invalid")
-        docker_source = f"-v \"{ss}:/{ss_name}\""
+        docker_source = f'-v "{ss}:/{ss_name}"'
         copy_cmd = f"cp -pr /{ss_name} /dest"
 
         copy_files = (
             f"{docker_run} {docker_source} {docker_target} {docker_image} {copy_cmd}"
         )
-        log.info(f"Running command: {copy_files}")
+        log.debug(f"Running command: {copy_files}")
         result = sp.run(copy_files, stdout=sp.PIPE, stderr=sp.STDOUT)
         result.returncode
 
@@ -101,7 +115,6 @@ def main() -> None:
     config["CLAMAV"].update({"av_accession": config["ACCESSION"]["accession_id"]})
     config["CLAMAV"].update({"quarantine_dir": "quarantine"})
 
-
     #
     # ClamAV
     runAV(config["CLAMAV"])
@@ -112,7 +125,6 @@ def main() -> None:
 
     #
     # Copy source files to destination folder
-    log.info("Copying files")
     copyFiles(config["BAGGER"])
 
     BagIt_test = {
