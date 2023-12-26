@@ -83,9 +83,19 @@ def copyFiles(f_config):
 
 def createBag(config, bag_data):
     docker_env = """
-        -e SOURCE_ORGANIZATION=f"{bag-data['Source-Organization']}" \
-        -e 
+        -e SOURCE_ORGANIZATION=f"{bag_data['Source-Organization']}" \
+        -e EXTERNAL_IDENTIFIER=f"{bag_data['External-Identifier']}" \
+        -e INTERNAL_SENDER_DESCRIPTION=f"{bag_data['Internal-Sender-Description']}" \
+        -e TITLE=f"{bag_data['Title']}" \
+        -e DATE_START=f"{bag_data['Date-Start']}" \
+        -e RECORD_CREATORS=f"{bag_data['Record-Creators']}" \
+        -e RECORD_TYPE=f"{bag_data['Record-Type']}" \
+        -e EXTEND_SIZE=f"{bag_data[''Extend-Size]}" \
+        -e SUBJECTS=f"{bag_data['Subjects']}" \
+        -e OFFICE=f"{bag_data['Office']}"
     """
+
+    
 
 
 def main() -> None:
@@ -105,7 +115,7 @@ def main() -> None:
         log.info(f"Reading configuration file '{config_file}'")
         config = ConfigParser(interpolation=ExtendedInterpolation())
         config.read(config_file)
-    except UnboundLocalError as ee:
+    except UnboundLocalError:
         log.error("Probably the config file parameter was not provded")
         raise Exception("Variable with file has a problem")
 
