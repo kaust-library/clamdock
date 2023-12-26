@@ -55,7 +55,6 @@ def runAV(av_config):
 
 
 def copyFiles(f_config):
-    # src = [ff.strip() for ff in f_config["source_dir"].split(",")]
     src = str2list(f_config["source_dir"])
     dest = f_config["dest_dir"]
 
