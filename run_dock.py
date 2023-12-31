@@ -95,8 +95,6 @@ def createBag(config, bag_data):
         -e OFFICE=f"{bag_data['Office']}"
     """
 
-    
-
 
 def main() -> None:
     #
