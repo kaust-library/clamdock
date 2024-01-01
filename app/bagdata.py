@@ -1,4 +1,4 @@
-import bagit
+from bagit import make_bag
 from os import environ
 
 
@@ -13,12 +13,14 @@ def main():
         "Record-Type": f"{environ['RECORD_TYPE']}",
         "Extend-Size": f"{environ['EXTEND_SIZE']}",
         "Subjects": f"{environ['SUBJECTS']}",
-        "Office": f"{environ['OFFICE']}"
+        "Office": f"{environ['OFFICE']}",
     }
 
-    print(environ['SOURCE_ORGANIZATION'])
+    bag_path = environ["BAG_PATH"]
 
-    print(BagIt_test)
+    my_bag = make_bag(bag_path, BagIt_test, checksums=["sha256"])
+
+    my_bag.save()
 
 
 if __name__ == "__main__":
