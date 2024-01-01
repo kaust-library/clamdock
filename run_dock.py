@@ -82,18 +82,34 @@ def copyFiles(f_config):
 
 
 def createBag(config, bag_data):
-    docker_env = """
-        -e SOURCE_ORGANIZATION=f"{bag_data['Source-Organization']}" \
-        -e EXTERNAL_IDENTIFIER=f"{bag_data['External-Identifier']}" \
-        -e INTERNAL_SENDER_DESCRIPTION=f"{bag_data['Internal-Sender-Description']}" \
-        -e TITLE=f"{bag_data['Title']}" \
-        -e DATE_START=f"{bag_data['Date-Start']}" \
-        -e RECORD_CREATORS=f"{bag_data['Record-Creators']}" \
-        -e RECORD_TYPE=f"{bag_data['Record-Type']}" \
-        -e EXTEND_SIZE=f"{bag_data[''Extend-Size]}" \
-        -e SUBJECTS=f"{bag_data['Subjects']}" \
-        -e OFFICE=f"{bag_data['Office']}"
-    """
+    bag_dest_dir = Path(config["dest_dir"])
+    bag_env_file = bag_dest_dir.joinpath("bag_env")
+    with open(bag_env_file, "w") as ff:
+        ff.write(f"SOURCE_ORGANIZATION={bag_data['Source-Organization']}\n")
+        ff.write(f"EXTERNAL_IDENTIFIER={bag_data['External-Identifier']}\n")
+        ff.write(
+            f"INTERNAL_SENDER_DESCRIPTION={bag_data['Internal-Sender-Description']}\n"
+        )
+        ff.write(f"TITLE={bag_data['Title']}\n")
+        ff.write(f"DATE_START={bag_data['Date-Start']}\n")
+        ff.write(f"RECORD_CREATORS={bag_data['Record-Creators']}\n")
+        ff.write(f"RECORD_TYPE={bag_data['Record-Type']}\n")
+        ff.write(f"EXTEND_SIZE={bag_data['Extend-Size']}\n")
+        ff.write(f"SUBJECTS={bag_data['Subjects']}\n")
+        ff.write(f"OFFICE={bag_data['Office']}\n")
+        ff.write(f"BAG_PATH={config['dest_dir']}")
+
+    docker_run = "docker run --rm --name mkbag"
+    docker_target = f'-v "{bag_dest_dir}:/mydir"'
+    docker_image = "mybagit"
+    docker_env_file = f"--env-file {bag_env_file}"
+
+    mk_bag = f"{docker_run} {docker_env_file} {docker_target} {docker_image} "
+    print(mk_bag)
+    print("\n")
+    result = run(mk_bag, stdout=PIPE, stderr=STDOUT)
+    print(result.stdout)
+    result.returncode
 
 
 def main() -> None:
@@ -117,6 +133,7 @@ def main() -> None:
         log.error("Probably the config file parameter was not provded")
         raise Exception("Variable with file has a problem")
 
+    # Update the ClamAV with extra variables. This is just convenience.
     config["CLAMAV"].update({"av_location": config["BAGGER"]["source_dir"]})
     config["CLAMAV"].update({"av_accession": config["ACCESSION"]["accession_id"]})
     config["CLAMAV"].update({"quarantine_dir": "quarantine"})
@@ -132,6 +149,8 @@ def main() -> None:
     #
     # Copy source files to destination folder
     copyFiles(config["BAGGER"])
+
+    # Create the bag.
 
     BagIt_test = {
         "Source-Organization": "KAUST",
