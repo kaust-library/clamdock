@@ -1,7 +1,14 @@
 FROM python:3.11-bookworm
 
+ARG email="library.systems@kaust.edu.sa"
+
+LABEL maintainer=${email}
+
+ENV AP=/app
+
 RUN pip install bagit
 
-COPY ./app /app
+
+COPY ./app ${AP}
 
 ENTRYPOINT [ "python" ,"/app/bagdata.py"]
