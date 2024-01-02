@@ -1,7 +1,3 @@
-# Run a docker container.
-# this is just a wrapper.
-
-
 import datetime as dt
 import logging as log
 import sys
@@ -11,6 +7,7 @@ from configparser import ConfigParser, ExtendedInterpolation
 from pathlib import Path
 from typing import List
 from subprocess import run, PIPE, STDOUT
+from tempfile import NamedTemporaryFile
 
 
 def str2list(ss: str) -> List:
@@ -42,12 +39,13 @@ def runAV(av_config):
     clam_options = " --recursive=yes --verbose"
     log_av = f"--log=/logs/{av_log_file}"
 
+    # Scan each directory in the input list.
     av_target_list = str2list(av_config["av_location"])
     for av_target_dir in av_target_list:
-        docker_target_name = Path(av_target_dir).name
-        docker_target = f'-v "{av_target_dir}:/{docker_target_name}"'
-        clam_run = f"clamav/clamav:latest clamscan /{docker_target_name}"
-        av_check = f"{docker_run} {docker_target} {docker_log_target} {clam_db} {clam_run} {log_av} {clam_options}"
+        docker_dest_name = Path(av_target_dir).name
+        docker_dest = f'-v "{av_target_dir}:/{docker_dest_name}"'
+        clam_run = f"clamav/clamav:latest clamscan /{docker_dest_name}"
+        av_check = f"{docker_run} {docker_dest} {docker_log_target} {clam_db} {clam_run} {log_av} {clam_options}"
         log.info(f"AV scanning: '{av_target_dir}'")
         log.debug(f"Antivirus check: {av_check}")
         result = run(av_check, stdout=PIPE, stderr=STDOUT)
@@ -61,7 +59,7 @@ def copyFiles(f_config):
     #
     # Docker container to copy files
     docker_run = "docker run --rm --name copy_files"
-    docker_target = f'-v "{dest}:/dest"'
+    docker_dest = f'-v "{dest}:/dest"'
     docker_image = "debian:bookworm-slim"
 
     for ss in src:
@@ -74,7 +72,7 @@ def copyFiles(f_config):
         copy_cmd = f"cp -pr /{ss_name} /dest"
 
         copy_files = (
-            f"{docker_run} {docker_source} {docker_target} {docker_image} {copy_cmd}"
+            f"{docker_run} {docker_source} {docker_dest} {docker_image} {copy_cmd}"
         )
         log.debug(f"Running command: {copy_files}")
         result = run(copy_files, stdout=PIPE, stderr=STDOUT)
@@ -82,9 +80,23 @@ def copyFiles(f_config):
 
 
 def createBag(config, bag_data):
+    """
+    Create a Bag structure with `bag_data` in directory `dest_dir` specified
+    in `config`. The bag_data is passed to the docker container via a
+    temporary file with the environment variables.
+    """
+
     bag_dest_dir = Path(config["dest_dir"])
-    bag_env_file = bag_dest_dir.joinpath("bag_env")
-    with open(bag_env_file, "w") as ff:
+
+    # Start defining the parameters for docker run.
+    docker_run = "docker run --rm --name mkbag"
+    docker_dest = f'-v "{bag_dest_dir}:/mydir"'
+    docker_image = "mybagit"
+
+    # Here we create the temporary file with the data for the Bag. Once the
+    # context manager (CM) finishes the file deleted, therefore we call
+    # docker inside the it.
+    with NamedTemporaryFile(mode="w", delete_on_close=False) as ff:
         ff.write(f"SOURCE_ORGANIZATION={bag_data['Source-Organization']}\n")
         ff.write(f"EXTERNAL_IDENTIFIER={bag_data['External-Identifier']}\n")
         ff.write(
@@ -98,17 +110,17 @@ def createBag(config, bag_data):
         ff.write(f"SUBJECTS={bag_data['Subjects']}\n")
         ff.write(f"OFFICE={bag_data['Office']}\n")
         ff.write(f"BAG_PATH={config['dest_dir']}")
+        ff.close()
 
-    docker_run = "docker run --rm --name mkbag"
-    docker_target = f'-v "{bag_dest_dir}:/mydir"'
-    docker_image = "mybagit"
-    docker_env_file = f"--env-file {bag_env_file}"
+        docker_env_file = f"--env-file {ff.name}"
+        mk_bag = f"{docker_run} {docker_env_file} {docker_dest} {docker_image} "
+        log.debug("Docker command:")
+        log.debug(mk_bag)
+        result = run(mk_bag, stdout=PIPE, stderr=STDOUT)
+        # CM end.
 
-    mk_bag = f"{docker_run} {docker_env_file} {docker_target} {docker_image} "
-    print(mk_bag)
-    print("\n")
-    result = run(mk_bag, stdout=PIPE, stderr=STDOUT)
-    print(result.stdout)
+    log.debug("Output from th docker command:")
+    log.debug(result.stdout)
     result.returncode
 
 
