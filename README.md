@@ -204,7 +204,13 @@ Jhove (Rel. 1.28.0, 2023-05-18)
 
 ### Prequisite
 
-Download [DROID](https://www.nationalarchives.gov.uk/information-management/manage-information/preserving-digital-records/droid/) for all platforms (instead of the Windows version), and extract the archive into the _files_ directory
+Download Java JRE first
+
+```
+(clamdock) PS C:\Users\garcm0b\Work\clamdock\files> docker pull ibmjava:jre
+```
+
+Next download [DROID](https://www.nationalarchives.gov.uk/information-management/manage-information/preserving-digital-records/droid/) for all platforms (instead of the Windows version), and extract the archive into the _files_ directory
 
 ```
 PS C:\Users\mgarcia\Downloads> expand-Archive -path '.\droid-binary-6.6.1-bin.zip' -destination 'C:\Users\mgarcia\Work\clamdock\files\droid'
