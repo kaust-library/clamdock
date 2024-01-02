@@ -52,7 +52,7 @@ def runAV(av_config):
         result.check_returncode
 
 
-def copyFiles(f_config):
+def copyFiles(f_config: ConfigParser) -> None:
     src = str2list(f_config["source_dir"])
     dest = f_config["dest_dir"]
 
@@ -79,7 +79,7 @@ def copyFiles(f_config):
         result.returncode
 
 
-def createBag(config, bag_data):
+def createBag(config: ConfigParser, bag_data: dict) -> None:
     """
     Create a Bag structure with `bag_data` in directory `dest_dir` specified
     in `config`. The bag_data is passed to the docker container via a
