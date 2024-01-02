@@ -23,9 +23,9 @@ PS C:\Users\garcm0b\Work\clamdock>
 
 The folders are organized as follows:
 
-* `airflow` for Airflow related files, like _dags_ and docker compose files.
-* `app` the code for script that will be in the container.
-* `files`, used to create the containers.
+- `airflow` for Airflow related files, like _dags_ and docker compose files.
+- `app` the code for script that will be in the container.
+- `files`, used to create the containers.
 
 ### Setting the Environment
 
@@ -59,7 +59,7 @@ a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ docker compose up airflow
 [+] Running 42/42
  ✔ airflow-init 19 layers [⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled
  (...)
- (...) 
+ (...)
  (...)
 a-garcm0b@library-docker-test:~/Work/clamdock/airflow$ docker compose up -d
 ```
@@ -223,5 +223,40 @@ PS C:\Users\mgarcia\Downloads> docker run -it --rm -v 'C:\Users\mgarcia\Document
 "ID","PARENT_ID","URI","FILE_PATH","NAME","METHOD","STATUS","SIZE","TYPE","EXT","LAST_MODIFIED","EXTENSION_MISMATCH","HASH","FORMAT_COUNT","PUID","MIME_TYPE","FORMAT_NAME","FORMAT_VERSION"
 "1","","file:/mydata/","/mydata","mydata","","Done","","Folder","","2023-08-25T11:05:54","false","","","","","",""
 "2","1","file:/mydata/20211021_Deka_Kauf_von_Wertpapieren.PDF","/mydata/20211021_Deka_Kauf_von_Wertpapieren.PDF","20211021_Deka_Kauf_von_Wertpapieren.PDF","Signature","Done","83206","File","pdf","2021-10-31T14:47:49","false","","1","fmt/354","application/pdf","Acrobat PDF/A - Portable Document Format","1b"
+(...)
+```
+
+Saving the profile. It seems this step is necessary to convert the profile to a CSV file later.
+
+Creating the profile
+
+```
+(clamdock) PS C:\Users\garcm0b\Work\clamdock> docker run -it --rm `
+>> -v "C:\Users\garcm0b\Work\clamdock_data\000_000_0000:/mydata" `
+>> --name mgdroid mydroid -a /mydata --recurse -p /mydata/test.droid
+2024-01-02T14:42:45,245  INFO [main] DroidCommandLine:225 - Starting DROID.
+2024-01-02T14:42:46,891  INFO [main] ProfileManagerImpl:129 - Creating profile: 1704206566890
+(...)
+```
+
+Next we export the profile to CSV
+
+```
+(clamdock) PS C:\Users\garcm0b\Work\clamdock> docker run -it --rm `
+>> -v "C:\Users\garcm0b\Work\clamdock_data\000_000_0000:/mydata" `
+>> --name mgdroid mydroid -p /mydata/test.droid -e /mydata/test.csv
+2024-01-02T14:45:20,788  INFO [main] DroidCommandLine:225 - Starting DROID.
+2024-01-02T14:45:22,563  INFO [main] ProfileManagerImpl:396 - Loading profile from: /mydata/test.droid
+2024-01-02T14:45:26,012  INFO [pool-2-thread-1] ExportTask:187 - Exporting profiles to: [/mydata/test.csv]
+(...)
+```
+
+Checking the CSV
+
+```
+PS C:\Users\garcm0b\Work\clamdock_data\000_000_0000> more .\test.csv
+"ID","PARENT_ID","URI","FILE_PATH","NAME","METHOD","STATUS","SIZE","TYPE","EXT","LAST_MODIFIED","EXTENSION_MISMATCH","HASH","FORMAT_COUNT","PUID","MIME_TYPE","FORMAT_NAME","FORMAT_VERSION"
+"2","","file:/mydata/","/mydata","mydata","","Done","","Folder","","2024-01-02T12:31:26","false","","","","","",""
+"4","2","file:/mydata/bag-info.txt","/mydata/bag-info.txt","bag-info.txt","Extension","Done","399","File","txt","2024-01-02T12:31:26","false","","1","x-fmt/111","text/plain","Plain Text File",""
 (...)
 ```
