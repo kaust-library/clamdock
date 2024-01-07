@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import List
 from subprocess import run, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
+from os import chdir
 
 
 def str2list(ss: str) -> List:
@@ -129,16 +130,22 @@ def runDroid(config: ConfigParser) -> None:
     Run DROID in two steps: create profile, and export profile to CSV.
     """
 
-    droid_bag_dir = Path(config["bag_dir"])
+    droid_dir = Path(config["bag_dir"])
+    droid_data = droid_dir.joinpath("data")
     accession_id = config["accession_id"]
 
+    chdir(droid_data)
     docker_run = "docker run --rm --name droid"
     docker_image = "mydroid"
-    docker_bag = f'-v "{droid_bag_dir}:/bag_dir"'
 
-    droid_profile = f"-a /bag_dir --recurse -p /bag_dir/{accession_id}.droid"
+    docker_droid = f"-v {droid_dir}:/droid"
+    docker_data = f'-v "{Path.cwd()}:/data"'
 
-    docker_cmd = f"{docker_run} {docker_bag} {docker_image} {droid_profile}"
+    # Create DROID profile
+    droid_profile = f"-a /data/ --recurse -p /droid/{accession_id}.droid"
+    docker_cmd = (
+        f"{docker_run} {docker_droid} {docker_data} {docker_image} {droid_profile}"
+    )
     log.info("Creating DROID profile")
     log.debug("DROID profile command:")
     log.debug(docker_cmd)
@@ -148,8 +155,8 @@ def runDroid(config: ConfigParser) -> None:
     result.returncode
 
     # Convert profile to CSV
-    droid_csv = f" -p /bag_dir/{accession_id}.droid -e /bag_dir/{accession_id}.csv"
-    docker_cmd = f"{docker_run} {docker_bag} {docker_image} {droid_csv}"
+    droid_csv = f" -p /droid/{accession_id}.droid -e /droid/{accession_id}.csv"
+    docker_cmd = f"{docker_run} {docker_droid} {docker_image} {droid_csv}"
     log.info("Exporting DROID profile to CSV")
     log.debug("DROID csv command:")
     log.debug(docker_cmd)
@@ -159,10 +166,23 @@ def runDroid(config: ConfigParser) -> None:
     result.returncode
 
 
+# def runJhove(config: ConfigParser, modules: ConfigParser) -> None:
+#     """
+#     Run JHOVE
+#     """
+
+#     jhove_data_dir = Path(config["bag_dir"]).joinpath("data")
+#     accession_id = config["accession_id"]
+
+#     docker_run = "docker run --rm --name jhove"
+#     docker_image = "myjove"
+#     docker_bag = f'-v "{jhove_data_dir}:/bag_dir"'
+
+
 def main() -> None:
     #
     # Logging
-    log.basicConfig(level=log.INFO)
+    log.basicConfig(level=log.DEBUG)
     #
     # Input file
     try:
@@ -219,6 +239,11 @@ def main() -> None:
     config["DROID"].update({"bag_dir": config["BAGGER"]["dest_dir"]})
     config["DROID"].update({"accession_id": config["ACCESSION"]["accession_id"]})
     runDroid(config["DROID"])
+
+    # Add BagIt folder and accession id to JHOVE section
+    # config["JHOVE"].update({"bag_dir": config["BAGGER"]["dest_dir"]})
+    # config["JHOVE"].update({"accession_id": config["ACCESSION"]["accession_id"]})
+    # runJhove(config["JHOVE"], config["JHOVE MODULES"])
 
 
 if __name__ == "__main__":
