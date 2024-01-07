@@ -124,6 +124,41 @@ def createBag(config: ConfigParser, bag_data: dict) -> None:
     result.returncode
 
 
+def runDroid(config: ConfigParser) -> None:
+    """
+    Run DROID in two steps: create profile, and export profile to CSV.
+    """
+
+    droid_bag_dir = Path(config["bag_dir"])
+    accession_id = config["accession_id"]
+
+    docker_run = "docker run --rm --name droid"
+    docker_image = "mydroid"
+    docker_bag = f'-v "{droid_bag_dir}:/bag_dir"'
+
+    droid_profile = f"-a /bag_dir --recurse -p /bag_dir/{accession_id}.droid"
+
+    docker_cmd = f"{docker_run} {docker_bag} {docker_image} {droid_profile}"
+    log.info("Creating DROID profile")
+    log.debug("DROID profile command:")
+    log.debug(docker_cmd)
+    result = run(docker_cmd, stdout=PIPE, stderr=STDOUT)
+    log.debug("Output from the docker command:")
+    log.debug(result.stdout)
+    result.returncode
+
+    # Convert profile to CSV
+    droid_csv = f" -p /bag_dir/{accession_id}.droid -e /bag_dir/{accession_id}.csv"
+    docker_cmd = f"{docker_run} {docker_bag} {docker_image} {droid_csv}"
+    log.info("Exporting DROID profile to CSV")
+    log.debug("DROID csv command:")
+    log.debug(docker_cmd)
+    result = run(docker_cmd, stdout=PIPE, stderr=STDOUT)
+    log.debug("Output from the docker command:")
+    log.debug(result.stdout)
+    result.returncode
+
+
 def main() -> None:
     #
     # Logging
@@ -179,6 +214,11 @@ def main() -> None:
 
     log.info("Creating bag")
     createBag(config["BAGGER"], BagIt_test)
+
+    # Add the destination folder and accession id to the 'DROID' section.
+    config["DROID"].update({"bag_dir": config["BAGGER"]["dest_dir"]})
+    config["DROID"].update({"accession_id": config["ACCESSION"]["accession_id"]})
+    runDroid(config["DROID"])
 
 
 if __name__ == "__main__":
