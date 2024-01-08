@@ -166,17 +166,19 @@ def runDroid(config: ConfigParser) -> None:
     result.returncode
 
 
-# def runJhove(config: ConfigParser, modules: ConfigParser) -> None:
-#     """
-#     Run JHOVE
-#     """
+def runJhove(config: ConfigParser, modules: ConfigParser) -> None:
+    """
+    Run JHOVE
+    """
 
-#     jhove_data_dir = Path(config["bag_dir"]).joinpath("data")
-#     accession_id = config["accession_id"]
+    jhove_dir = Path(config["bag_dir"])
+    jhove_data = jhove_dir.joinpath("data")
 
-#     docker_run = "docker run --rm --name jhove"
-#     docker_image = "myjove"
-#     docker_bag = f'-v "{jhove_data_dir}:/bag_dir"'
+    accession_id = config["accession_id"]
+
+    docker_run = "docker run --rm --name jhove"
+    docker_image = "myjove"
+    docker_bag = f'-v "{jhove_data_dir}:/bag_dir"'
 
 
 def main() -> None:
@@ -241,9 +243,9 @@ def main() -> None:
     runDroid(config["DROID"])
 
     # Add BagIt folder and accession id to JHOVE section
-    # config["JHOVE"].update({"bag_dir": config["BAGGER"]["dest_dir"]})
-    # config["JHOVE"].update({"accession_id": config["ACCESSION"]["accession_id"]})
-    # runJhove(config["JHOVE"], config["JHOVE MODULES"])
+    config["JHOVE"].update({"bag_dir": config["BAGGER"]["dest_dir"]})
+    config["JHOVE"].update({"accession_id": config["ACCESSION"]["accession_id"]})
+    runJhove(config["JHOVE"], config["JHOVE MODULES"])
 
 
 if __name__ == "__main__":
