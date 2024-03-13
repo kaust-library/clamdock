@@ -23,12 +23,16 @@ def runAV(av_config):
     dt_run_av = dt.datetime.today().strftime("%Y%m%d")
 
     #
+    # Check if volume exists.
+
+
+    #
     # Update antivirus database.
     log.info("Updating AV database")
     av_update = """docker run -it --rm --name 'freshclamdb' 
     --mount source=clamdb,target=/var/lib/clamav 
     clamav/clamav:latest freshclam"""
-    result = run(av_update, stdout=PIPE, stderr=STDOUT, text=True)
+    result = run(av_update, shell=True, stdout=PIPE, stderr=STDOUT, text=True)
     log.info("Update of AV database done")
 
     #
@@ -49,7 +53,7 @@ def runAV(av_config):
         av_check = f"{docker_run} {docker_dest} {docker_log_target} {clam_db} {clam_run} {log_av} {clam_options}"
         log.info(f"AV scanning: '{av_target_dir}'")
         log.debug(f"Antivirus check: {av_check}")
-        result = run(av_check, stdout=PIPE, stderr=STDOUT)
+        result = run(av_check, shell=True, stdout=PIPE, stderr=STDOUT)
         result.check_returncode
 
 
@@ -76,7 +80,7 @@ def copyFiles(f_config: ConfigParser) -> None:
             f"{docker_run} {docker_source} {docker_dest} {docker_image} {copy_cmd}"
         )
         log.debug(f"Running command: {copy_files}")
-        result = run(copy_files, stdout=PIPE, stderr=STDOUT)
+        result = run(copy_files, shell=True, stdout=PIPE, stderr=STDOUT)
         result.returncode
 
 
@@ -97,7 +101,7 @@ def createBag(config: ConfigParser, bag_data: dict) -> None:
     # Here we create the temporary file with the data for the Bag. Once the
     # context manager (CM) finishes the file deleted, therefore we call
     # docker inside the it.
-    with NamedTemporaryFile(mode="w", delete_on_close=False) as ff:
+    with NamedTemporaryFile(mode="w", delete=False) as ff:
         ff.write(f"SOURCE_ORGANIZATION={bag_data['Source-Organization']}\n")
         ff.write(f"EXTERNAL_IDENTIFIER={bag_data['External-Identifier']}\n")
         ff.write(
@@ -117,8 +121,11 @@ def createBag(config: ConfigParser, bag_data: dict) -> None:
         mk_bag = f"{docker_run} {docker_env_file} {docker_dest} {docker_image} "
         log.debug("Docker command:")
         log.debug(mk_bag)
-        result = run(mk_bag, stdout=PIPE, stderr=STDOUT)
-        # CM end.
+        result = run(mk_bag, shell=True, stdout=PIPE, stderr=STDOUT)
+        # Remove the temporary file
+        log.info("Removing temporary file")
+        Path(ff.name).unlink()
+        # CM end.   
 
     log.debug("Output from th docker command:")
     log.debug(result.stdout)
@@ -149,7 +156,7 @@ def runDroid(config: ConfigParser) -> None:
     log.info("Creating DROID profile")
     log.debug("DROID profile command:")
     log.debug(docker_cmd)
-    result = run(docker_cmd, stdout=PIPE, stderr=STDOUT)
+    result = run(docker_cmd, shell=True, stdout=PIPE, stderr=STDOUT)
     log.debug("Output from the docker command:")
     log.debug(result.stdout)
     result.returncode
@@ -160,7 +167,7 @@ def runDroid(config: ConfigParser) -> None:
     log.info("Exporting DROID profile to CSV")
     log.debug("DROID csv command:")
     log.debug(docker_cmd)
-    result = run(docker_cmd, stdout=PIPE, stderr=STDOUT)
+    result = run(docker_cmd, shell=True, stdout=PIPE, stderr=STDOUT)
     log.debug("Output from the docker command:")
     log.debug(result.stdout)
     result.returncode
@@ -190,7 +197,7 @@ def main() -> None:
     try:
         config_file = sys.argv[1]
     except IndexError:
-        log.error("Input file must be provided")
+        raise FileNotFoundError("Accession configuration file not provided")
 
     #
     # Set system configuration
@@ -243,9 +250,9 @@ def main() -> None:
     runDroid(config["DROID"])
 
     # Add BagIt folder and accession id to JHOVE section
-    config["JHOVE"].update({"bag_dir": config["BAGGER"]["dest_dir"]})
-    config["JHOVE"].update({"accession_id": config["ACCESSION"]["accession_id"]})
-    runJhove(config["JHOVE"], config["JHOVE MODULES"])
+    # config["JHOVE"].update({"bag_dir": config["BAGGER"]["dest_dir"]})
+    # config["JHOVE"].update({"accession_id": config["ACCESSION"]["accession_id"]})
+    # runJhove(config["JHOVE"], config["JHOVE MODULES"])
 
 
 if __name__ == "__main__":
