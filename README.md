@@ -11,36 +11,30 @@ Example of input file
 ```
 #
 # Configuration file for the digital preservation workflow
-#
+# 
 
 [ACCESSION]
 accession_id = 000_000_0000
 
 [BAGGER]
 # You can specify a comma separated list of directories as source: dir1, dir2, ...
-source_dir = C:\Users\joe\Work\boat_trip_pictures, C:\Users\joe\Work\my_event_1
+source_dir = /home/mgarcia/Work/clamdock_data/src/libguides
 # Using Python ExtendedInterpolation to use the 'accession_id' as target directory
-dest_dir = C:\Users\joe\Work\${ACCESSION:accession_id}
-# If 'false' the script will stop the the destination directory already exists.
+dest_dir = /home/mgarcia/Work/clamdock_data/dest/${ACCESSION:accession_id}
+# TODO: This comment below must be verified!
+# If 'false' the script will stop the the destination directory already exists.(?)
 
 [CLAMAV]
-av_dir = C:\Program Files\ClamAV
-av_update = freshclam.exe
-av_clamav = clamscan.exe
-av_logs_root = C:\Users\Desktop\john\clamscanlogs\clamAVlog
+av_logs_root = /home/mgarcia/Work/clamdock_data/logs
+quarantine_dir = /home/mgarcia/Work/clamdock_data/quarantine
+quarantine_file = ${quarantine_dir}/${ACCESSION:accession_id}
 quarantine_days = 30
-# Doesn't actually run the AV command, just print it.
-run_it = no
 
 [DROID]
-droid_dir = C:\Users\joe\Downloads\droid-binary-6.5.2-bin-win32-with-jre
-droid_bin = droid.bat
 # The profile is the database with the metadata in binary format.
 keep_profile = yes
 
 [JHOVE]
-jhove_dir = C:\Users\joe\Work\jhove
-jhove_bin = jhove.bat
 jhove_xml = yes
 
 [JHOVE MODULES]
@@ -50,7 +44,7 @@ GIF-hul      = no
 GZip-kb      = no
 HTML-hul     = no
 JPEG-hul     = yes
-JPEG2000-hul = no
+JPEG2000-hul = yes
 PDF-hul      = no
 TIFF-hul     = no
 UTF8-hul     = no
@@ -117,7 +111,7 @@ PS C:\Users\garcm0b\Work>
 
 ### Building
 
-Build the container using the `Dockerfile.bagit`
+Build the container image using the `Dockerfile.bagit`
 
 ```
 PS C:\Users\mgarcia\Work\clamdock> docker build -f Dockerfile.bagit -t mybagit .

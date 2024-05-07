@@ -1,4 +1,3 @@
-import datetime as dt
 import logging as log
 import sys
 
@@ -9,7 +8,7 @@ from typing import List
 from subprocess import run, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from os import chdir
-
+from datetime import date, timedelta
 
 def str2list(ss: str) -> List:
     """
@@ -20,7 +19,7 @@ def str2list(ss: str) -> List:
 
 
 def runAV(av_config):
-    dt_run_av = dt.datetime.today().strftime("%Y%m%d")
+    dt_run_av = date.today().strftime("%Y%m%d")
 
     #
     # Check if volume exists.
@@ -29,7 +28,7 @@ def runAV(av_config):
     #
     # Update antivirus database.
     log.info("Updating AV database")
-    av_update = """docker run -it --rm --name 'freshclamdb' 
+    av_update = """docker run -it --rm --name 'freshclamdb'  
     --mount source=clamdb,target=/var/lib/clamav 
     clamav/clamav:latest freshclam"""
     result = run(av_update, shell=True, stdout=PIPE, stderr=STDOUT, text=True)
@@ -38,7 +37,7 @@ def runAV(av_config):
     #
     # Antivirus.
     av_log_file = f"clamAVlog{av_config['av_accession']}_{dt_run_av}.txt"
-    docker_run = f"docker run --rm --name clamAV"
+    docker_run = f"docker run --rm --name clamAV "
     docker_log_target = f"-v \"{av_config['av_logs_root']}:/logs\""
     clam_db = "--mount source=clamdb,target=/var/lib/clamav"
     clam_options = " --recursive=yes --verbose"
@@ -176,7 +175,13 @@ def runDroid(config: ConfigParser) -> None:
 def runJhove(config: ConfigParser, modules: ConfigParser) -> None:
     """
     Run JHOVE
+    docker run --rm --name jhove \
+        -v ~/Work/clamdock_data/dest/000_000_0000:/jhove \
+        -v ~/Work/clamdock_data/dest/000_000_0000/data:/data myjhove \
+        -o /jhove/test.xml -m PDF-hul -kr /data
     """
+
+    modules_list = [kk for (kk,vv) in modules.items() if modules.getboolean(kk)]
 
     jhove_dir = Path(config["bag_dir"])
     jhove_data = jhove_dir.joinpath("data")
@@ -184,8 +189,59 @@ def runJhove(config: ConfigParser, modules: ConfigParser) -> None:
     accession_id = config["accession_id"]
 
     docker_run = "docker run --rm --name jhove"
-    docker_image = "myjove"
-    docker_bag = f'-v "{jhove_data_dir}:/bag_dir"'
+    docker_image = "myjhove"
+    docker_bag = f'-v "{jhove_dir}:/jhove"'
+    docker_data = f'-v "{jhove_data}:/data"'
+
+    log.info("Running JHOVE container")
+
+    for mm in modules_list:
+        # Module name for name of output file
+        module_name = mm.split('-')[0]
+
+        if config.getboolean('jhove_xml'):
+            module_output = f'-h xml -o /jhove/jhove_{accession_id}_{module_name}.xml'
+        else:
+            module_output = f'-o /jhove/jhove_{accession_id}_{module_name}.txt'
+
+        docker_cmd = (
+            f"{docker_run} {docker_bag} {docker_data} {docker_image} -m {mm} {module_output} -kr /data"
+        )
+        
+        log.debug(f"Docker command: \n {docker_cmd}")
+        result = run(docker_cmd, shell=True, stdout=PIPE, stderr=STDOUT)
+        log.debug("Output from the docker command:")
+        log.debug(result.stdout)
+        result.returncode
+
+    log.info("JHOVE done.")
+
+
+def is_over_quarantine(quarantine_file: Path) -> bool:
+    """Check if quarantine is over: 
+      today >= creation_date + quarantine days
+    """
+
+    with open(quarantine_file, 'r') as fin:
+        quar_date = fin.readline().strip()
+        quar_days = int(fin.readline())
+
+    today = date.today()
+    av_check = date.fromisoformat(quar_date)
+
+    return today > av_check + timedelta(days=quar_days)
+
+def create_quarantine_file(config_av: ConfigParser) -> None:
+    """Create the quarantine file in the format:
+       YYYY-MM-DD (today)
+       99 (quarantine_duration)
+    """
+
+    av_today = date.today().isoformat()
+
+    with open(config_av['quarantine_file'], 'w') as fout:
+        fout.write(av_today + "\n")
+        fout.write(config_av['quarantine_days'] + "\n")
 
 
 def main() -> None:
@@ -212,15 +268,26 @@ def main() -> None:
     # Update the ClamAV with extra variables. This is just convenience.
     config["CLAMAV"].update({"av_location": config["BAGGER"]["source_dir"]})
     config["CLAMAV"].update({"av_accession": config["ACCESSION"]["accession_id"]})
-    config["CLAMAV"].update({"quarantine_dir": "quarantine"})
 
-    #
-    # ClamAV
-    runAV(config["CLAMAV"])
+    quarantine_file = Path(config["CLAMAV"]["quarantine_file"])
 
-    #
-    # TODO
-    # Add quarantine.
+    log.info("Checking if quarantine is over")
+    if quarantine_file.exists():
+        if is_over_quarantine(quarantine_file):
+            log.info("Quarantine is over")
+            log.info("Running AV check for second time")
+            runAV(config["CLAMAV"])
+        else:
+            log.info("Quarantine not over")
+            sys.exit(0)
+    else:
+        log.info("Running first AV check")
+        runAV(config["CLAMAV"])
+        # if the AV check was successfull, create the quarantine file.
+        log.info("Creating quarantine file")
+        create_quarantine_file(config["CLAMAV"])
+        log.info("Starting the quarantine period. Come back when it's over")
+        sys.exit(0)
 
     #
     # Copy source files to destination folder
@@ -250,9 +317,9 @@ def main() -> None:
     runDroid(config["DROID"])
 
     # Add BagIt folder and accession id to JHOVE section
-    # config["JHOVE"].update({"bag_dir": config["BAGGER"]["dest_dir"]})
-    # config["JHOVE"].update({"accession_id": config["ACCESSION"]["accession_id"]})
-    # runJhove(config["JHOVE"], config["JHOVE MODULES"])
+    config["JHOVE"].update({"bag_dir": config["BAGGER"]["dest_dir"]})
+    config["JHOVE"].update({"accession_id": config["ACCESSION"]["accession_id"]})
+    runJhove(config["JHOVE"], config["JHOVE MODULES"])
 
 
 if __name__ == "__main__":
