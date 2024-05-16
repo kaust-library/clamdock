@@ -17,14 +17,42 @@ def str2list(ss: str) -> List:
 
     return [sss.strip() for sss in ss.split(",")]
 
+def is_av_vol(vol_name: str) -> bool:
+    """Check if volume for persistent anti-virus database already exists"""
+    inspect_vol = f"docker volume inspect {vol_name}"
+
+    result = run(inspect_vol, shell=True, stdout=PIPE, stderr=STDOUT, text=True)
+    vol = result.stdout.strip().split()
+    if vol[0] == "[]":
+        return False
+    else:
+        return True
+
+def create_av_vol(vol_name: str) -> None:
+    """Create volume 'vol_name' for anti-virus persistent database"""
+
+    create_vol = f"docker volume create {vol_name}"
+    result = run(create_vol, shell=True, stdout=PIPE, stderr=STDOUT, text=True)
+    vol_created = result.stdout.strip()
+    print(vol_name, vol_created)
+    if vol_created != vol_name:
+        log.critical("Something went wrong creating the antivirus volume!")
+        raise Exception("Error creating AV volume")
+    else:
+        log.info("Volume for anti-virus database created successfully")
+
 
 def runAV(av_config):
     dt_run_av = date.today().strftime("%Y%m%d")
 
     #
     # Check if volume exists.
-
-
+    av_vol = av_config["av_volume"]
+    if not is_av_vol(av_vol):
+        log.warning(f"Volume for AV database not found. Creating volume {av_vol}")
+        create_av_vol(av_vol)
+    else:
+        log.info(f"Volume '{av_vol}'for AV database found")
     #
     # Update antivirus database.
     log.info("Updating AV database")
