@@ -41,6 +41,32 @@ def create_av_vol(vol_name: str) -> None:
     else:
         log.info("Volume for anti-virus database created successfully")
 
+def is_infected(av_log: str) -> bool:
+    """Check if there is an infected file in the antivirus log"""
+
+    is_infected = True
+    text = av_log.strip().split("\n")
+    print(text)
+    total_line = text[-7]
+    infect_line = text[-6]
+    scanned_files = total_line.split()[-1]
+    infect_field, infect_num = infect_line.split()[0], infect_line.split()[2]
+    if int(scanned_files) == 0:
+        log.critical(f"No scanned files. Something wrong. Please check AV logs.")
+        sys.exit(1)
+    print(f"Scanned {scanned_files} files")
+    if infect_field == "Infected" and int(infect_num) == 0:
+        print(f"OK: no infected files")
+        is_infected = False
+    elif infect_line == "Infected" and int(infect_num) != 0:
+        if int(infect_num) == 1:
+            print(f"Caution: there is 1 infected file!!!!!")
+        else:
+            print(f"Caution: there are {infect_num} infected files!!!!!")
+    else:
+        print(f"Error: could not find 'Infected' line in the output")
+
+    return is_infected
 
 def runAV(av_config):
     dt_run_av = date.today().strftime("%Y%m%d")
@@ -56,11 +82,13 @@ def runAV(av_config):
     #
     # Update antivirus database.
     log.info("Updating AV database")
-    av_update = """docker run -it --rm --name 'freshclamdb'  
-    --mount source=clamdb,target=/var/lib/clamav 
+    av_update = """docker run -it --rm --name 'freshclamdb'  \
+    --mount source=clamdb,target=/var/lib/clamav  \
     clamav/clamav:latest freshclam"""
     result = run(av_update, shell=True, stdout=PIPE, stderr=STDOUT, text=True)
     log.info("Update of AV database done")
+    log.debug("Output of AV database update:")
+    log.debug(result.stdout)
 
     #
     # Antivirus.
@@ -80,8 +108,11 @@ def runAV(av_config):
         av_check = f"{docker_run} {docker_dest} {docker_log_target} {clam_db} {clam_run} {log_av} {clam_options}"
         log.info(f"AV scanning: '{av_target_dir}'")
         log.debug(f"Antivirus check: {av_check}")
-        result = run(av_check, shell=True, stdout=PIPE, stderr=STDOUT)
+        result = run(av_check, shell=True, stdout=PIPE, stderr=STDOUT, text=True)
         result.check_returncode
+        if is_infected(result.stdout):
+            raise(f"Possible infected file in {{av_target_dir}}")
+
 
 
 def copyFiles(f_config: ConfigParser) -> None:
