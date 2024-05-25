@@ -13,6 +13,12 @@ Example of input file
 # Configuration file for the digital preservation workflow
 # 
 
+# Maybe this only make sense for Linux users, and on Windows
+# just remove it.
+[USER]
+uid = 1000
+gid = 1000
+
 [ACCESSION]
 accession_id = 000_000_0000
 
