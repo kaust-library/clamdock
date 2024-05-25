@@ -10,12 +10,14 @@ from tempfile import NamedTemporaryFile
 from os import chdir
 from datetime import date, timedelta
 
+
 def str2list(ss: str) -> List:
     """
     Convert a comma separated string ("aa, bb, cc") into a list ['aa', 'bb', 'cc'].
     """
 
     return [sss.strip() for sss in ss.split(",")]
+
 
 def is_av_vol(vol_name: str) -> bool:
     """Check if volume for persistent anti-virus database already exists"""
@@ -27,6 +29,7 @@ def is_av_vol(vol_name: str) -> bool:
         return False
     else:
         return True
+
 
 def create_av_vol(vol_name: str) -> None:
     """Create volume 'vol_name' for anti-virus persistent database"""
@@ -40,6 +43,7 @@ def create_av_vol(vol_name: str) -> None:
         raise Exception("Error creating AV volume")
     else:
         log.info("Volume for anti-virus database created successfully")
+
 
 def is_infected(av_log: str) -> bool:
     """Check if there is an infected file in the antivirus log"""
@@ -68,7 +72,8 @@ def is_infected(av_log: str) -> bool:
 
     return is_infected
 
-def runAV(av_config):
+
+def runAV(av_config: ConfigParser) -> None:
     dt_run_av = date.today().strftime("%Y%m%d")
 
     #
@@ -94,6 +99,8 @@ def runAV(av_config):
     # Antivirus.
     av_log_file = f"clamAVlog{av_config['av_accession']}_{dt_run_av}.txt"
     docker_run = f"docker run --rm --name clamAV "
+    # docker_user = f"--user={av_config['uid']}:{av_config['gid']}"
+    docker_user = f"--user=root:root"
     docker_log_target = f"-v \"{av_config['av_logs_root']}:/logs\""
     clam_db = "--mount source=clamdb,target=/var/lib/clamav"
     clam_options = " --recursive=yes --verbose"
@@ -105,24 +112,28 @@ def runAV(av_config):
         docker_dest_name = Path(av_target_dir).name
         docker_dest = f'-v "{av_target_dir}:/{docker_dest_name}"'
         clam_run = f"clamav/clamav:latest clamscan /{docker_dest_name}"
-        av_check = f"{docker_run} {docker_dest} {docker_log_target} {clam_db} {clam_run} {log_av} {clam_options}"
+        av_check = f"{docker_run} {docker_user} {docker_dest} {docker_log_target} {clam_db} {clam_run} {log_av} {clam_options}"
         log.info(f"AV scanning: '{av_target_dir}'")
         log.debug(f"Antivirus check: {av_check}")
         result = run(av_check, shell=True, stdout=PIPE, stderr=STDOUT, text=True)
         result.check_returncode
         if is_infected(result.stdout):
-            raise(f"Possible infected file in {{av_target_dir}}")
-
+            raise (f"Possible infected file in {{av_target_dir}}")
 
 
 def copyFiles(f_config: ConfigParser) -> None:
     src = str2list(f_config["source_dir"])
-    dest = f_config["dest_dir"]
+    dest = Path(f_config["dest_dir"])
+
+    if not dest.exists():
+        log.info(f"Creating destination directory: '{dest}'")
+        dest.mkdir()
 
     #
     # Docker container to copy files
     docker_run = "docker run --rm --name copy_files"
     docker_dest = f'-v "{dest}:/dest"'
+    docker_user = f"--user={f_config['uid']}:{f_config['gid']}"
     docker_image = "debian:bookworm-slim"
 
     for ss in src:
@@ -134,9 +145,7 @@ def copyFiles(f_config: ConfigParser) -> None:
         docker_source = f'-v "{ss}:/{ss_name}"'
         copy_cmd = f"cp -pr /{ss_name} /dest"
 
-        copy_files = (
-            f"{docker_run} {docker_source} {docker_dest} {docker_image} {copy_cmd}"
-        )
+        copy_files = f"{docker_run} {docker_user} {docker_source} {docker_dest} {docker_image} {copy_cmd}"
         log.debug(f"Running command: {copy_files}")
         result = run(copy_files, shell=True, stdout=PIPE, stderr=STDOUT)
         result.returncode
@@ -153,6 +162,7 @@ def createBag(config: ConfigParser, bag_data: dict) -> None:
 
     # Start defining the parameters for docker run.
     docker_run = "docker run --rm --name mkbag"
+    docker_user = f"--user={config['uid']}:{config['gid']}"
     docker_dest = f'-v "{bag_dest_dir}:/mydir"'
     docker_image = "mybagit"
 
@@ -176,14 +186,14 @@ def createBag(config: ConfigParser, bag_data: dict) -> None:
         ff.close()
 
         docker_env_file = f"--env-file {ff.name}"
-        mk_bag = f"{docker_run} {docker_env_file} {docker_dest} {docker_image} "
+        mk_bag = f"{docker_run} {docker_user} {docker_env_file} {docker_dest} {docker_image} "
         log.debug("Docker command:")
         log.debug(mk_bag)
         result = run(mk_bag, shell=True, stdout=PIPE, stderr=STDOUT)
         # Remove the temporary file
         log.info("Removing temporary file")
         Path(ff.name).unlink()
-        # CM end.   
+        # CM end.
 
     log.debug("Output from th docker command:")
     log.debug(result.stdout)
@@ -201,6 +211,7 @@ def runDroid(config: ConfigParser) -> None:
 
     chdir(droid_data)
     docker_run = "docker run --rm --name droid"
+    docker_user = f"--user={config['uid']}:{config['gid']}"
     docker_image = "mydroid"
 
     docker_droid = f"-v {droid_dir}:/droid"
@@ -208,9 +219,7 @@ def runDroid(config: ConfigParser) -> None:
 
     # Create DROID profile
     droid_profile = f"-a /data/ --recurse -p /droid/{accession_id}.droid"
-    docker_cmd = (
-        f"{docker_run} {docker_droid} {docker_data} {docker_image} {droid_profile}"
-    )
+    docker_cmd = f"{docker_run} {docker_user} {docker_droid} {docker_data} {docker_image} {droid_profile}"
     log.info("Creating DROID profile")
     log.debug("DROID profile command:")
     log.debug(docker_cmd)
@@ -221,7 +230,7 @@ def runDroid(config: ConfigParser) -> None:
 
     # Convert profile to CSV
     droid_csv = f" -p /droid/{accession_id}.droid -e /droid/{accession_id}.csv"
-    docker_cmd = f"{docker_run} {docker_droid} {docker_image} {droid_csv}"
+    docker_cmd = f"{docker_run} {docker_user} {docker_droid} {docker_image} {droid_csv}"
     log.info("Exporting DROID profile to CSV")
     log.debug("DROID csv command:")
     log.debug(docker_cmd)
@@ -240,7 +249,7 @@ def runJhove(config: ConfigParser, modules: ConfigParser) -> None:
         -o /jhove/test.xml -m PDF-hul -kr /data
     """
 
-    modules_list = [kk for (kk,vv) in modules.items() if modules.getboolean(kk)]
+    modules_list = [kk for (kk, vv) in modules.items() if modules.getboolean(kk)]
 
     jhove_dir = Path(config["bag_dir"])
     jhove_data = jhove_dir.joinpath("data")
@@ -248,6 +257,7 @@ def runJhove(config: ConfigParser, modules: ConfigParser) -> None:
     accession_id = config["accession_id"]
 
     docker_run = "docker run --rm --name jhove"
+    docker_user = f"--user={config['uid']}:{config['gid']}"
     docker_image = "myjhove"
     docker_bag = f'-v "{jhove_dir}:/jhove"'
     docker_data = f'-v "{jhove_data}:/data"'
@@ -256,17 +266,15 @@ def runJhove(config: ConfigParser, modules: ConfigParser) -> None:
 
     for mm in modules_list:
         # Module name for name of output file
-        module_name = mm.split('-')[0]
+        module_name = mm.split("-")[0]
 
-        if config.getboolean('jhove_xml'):
-            module_output = f'-h xml -o /jhove/jhove_{accession_id}_{module_name}.xml'
+        if config.getboolean("jhove_xml"):
+            module_output = f"-h xml -o /jhove/jhove_{accession_id}_{module_name}.xml"
         else:
-            module_output = f'-o /jhove/jhove_{accession_id}_{module_name}.txt'
+            module_output = f"-o /jhove/jhove_{accession_id}_{module_name}.txt"
 
-        docker_cmd = (
-            f"{docker_run} {docker_bag} {docker_data} {docker_image} -m {mm} {module_output} -kr /data"
-        )
-        
+        docker_cmd = f"{docker_run} {docker_user} {docker_bag} {docker_data} {docker_image} -m {mm} {module_output} -kr /data"
+
         log.debug(f"Docker command: \n {docker_cmd}")
         result = run(docker_cmd, shell=True, stdout=PIPE, stderr=STDOUT)
         log.debug("Output from the docker command:")
@@ -277,11 +285,11 @@ def runJhove(config: ConfigParser, modules: ConfigParser) -> None:
 
 
 def is_over_quarantine(quarantine_file: Path) -> bool:
-    """Check if quarantine is over: 
-      today >= creation_date + quarantine days
+    """Check if quarantine is over:
+    today >= creation_date + quarantine days
     """
 
-    with open(quarantine_file, 'r') as fin:
+    with open(quarantine_file, "r") as fin:
         quar_date = fin.readline().strip()
         quar_days = int(fin.readline())
 
@@ -290,17 +298,32 @@ def is_over_quarantine(quarantine_file: Path) -> bool:
 
     return today > av_check + timedelta(days=quar_days)
 
+
 def create_quarantine_file(config_av: ConfigParser) -> None:
     """Create the quarantine file in the format:
-       YYYY-MM-DD (today)
-       99 (quarantine_duration)
+    YYYY-MM-DD (today)
+    99 (quarantine_duration)
     """
 
     av_today = date.today().isoformat()
 
-    with open(config_av['quarantine_file'], 'w') as fout:
+    with open(config_av["quarantine_file"], "w") as fout:
         fout.write(av_today + "\n")
-        fout.write(config_av['quarantine_days'] + "\n")
+        fout.write(config_av["quarantine_days"] + "\n")
+
+
+def get_user(config: ConfigParser) -> str:
+    """Check if the user and group were provided in the configuration file.
+    If not, then we set 'root' for user and group."""
+
+    if config.has_section("USER"):
+        uid = config["USER"].get("uid", "root")
+        gid = config["USER"].get("gid", "root")
+    else:
+        uid = "root"
+        gid = "root"
+
+    return uid, gid
 
 
 def main() -> None:
@@ -324,9 +347,13 @@ def main() -> None:
         log.error("Probably the config file parameter was not provded")
         raise Exception("Variable with file has a problem")
 
+    uid, gid = get_user(config)
+
     # Update the ClamAV with extra variables. This is just convenience.
     config["CLAMAV"].update({"av_location": config["BAGGER"]["source_dir"]})
     config["CLAMAV"].update({"av_accession": config["ACCESSION"]["accession_id"]})
+    config["CLAMAV"].update({"uid": uid})
+    config["CLAMAV"].update({"gid": gid})
 
     quarantine_file = Path(config["CLAMAV"]["quarantine_file"])
 
@@ -350,6 +377,8 @@ def main() -> None:
 
     #
     # Copy source files to destination folder
+    config["BAGGER"].update({"uid": uid})
+    config["BAGGER"].update({"gid": gid})
     copyFiles(config["BAGGER"])
 
     # Create the bag.
@@ -373,11 +402,15 @@ def main() -> None:
     # Add the destination folder and accession id to the 'DROID' section.
     config["DROID"].update({"bag_dir": config["BAGGER"]["dest_dir"]})
     config["DROID"].update({"accession_id": config["ACCESSION"]["accession_id"]})
+    config["DROID"].update({"uid": uid})
+    config["DROID"].update({"gid": gid})
     runDroid(config["DROID"])
 
     # Add BagIt folder and accession id to JHOVE section
     config["JHOVE"].update({"bag_dir": config["BAGGER"]["dest_dir"]})
     config["JHOVE"].update({"accession_id": config["ACCESSION"]["accession_id"]})
+    config["JHOVE"].update({"uid": uid})
+    config["JHOVE"].update({"gid": gid})
     runJhove(config["JHOVE"], config["JHOVE MODULES"])
 
 
