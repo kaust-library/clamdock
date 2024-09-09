@@ -149,7 +149,9 @@ mgarcia@arda:~/Work/clamdock$
 Then you run the container to create the _bag_
 
 ```
-mgarcia@arda:~/Work/clamdock$ docker run -it --rm --env-file bagit_env -v "/home/mgarcia/Work/clamdock_data/mybag:/mydir" --name mgbagit mybagit bagit.py --contact-name 'john' /mydir
+mgarcia@arda:~/Work/clamdock$ docker run -it --rm --env-file bagit_env \
+-v "/home/mgarcia/Work/clamdock_data/mybag:/mydir" \
+--name mgbagit mybagit bagit.py --contact-name 'john' /mydir
 mgarcia@arda:~/Work/clamdock$
 ```
 
