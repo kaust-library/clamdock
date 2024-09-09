@@ -11,7 +11,7 @@ Example of input file
 ```
 #
 # Configuration file for the digital preservation workflow
-# 
+#
 
 # Maybe this only make sense for Linux users, and on Windows
 # just remove it.
@@ -58,7 +58,6 @@ WARC-kb      = no
 WAVE-hul     = no
 XML-hul      = no
 ```
-
 
 ### Persisting the Virus Database
 
@@ -130,14 +129,48 @@ docker:default
 
 ### Running
 
-After building the container, you can use it to create a _bag_ file
+After building the container, you will need to create a file with environment variables used by the `bagit`
 
 ```
-PS C:\Users\mgarcia\Work\clamdock> mkdir mybag
-PS C:\Users\mgarcia\Work\clamdock> docker run -it --rm -v "C:\Users\mgarcia\Work\clamdock\mybag:/mydir" --name mgbagit mybagit bagit.py --contact-name 'john' /mydir
-2023-10-14 17:38:37,726 - INFO - Creating bag for directory /mydir
-2023-10-14 17:38:37,733 - INFO - Creating data directory
-(...)
+mgarcia@arda:~/Work/clamdock$ cat bagit_env
+SOURCE_ORGANIZATION="KAUST"
+EXTERNAL_IDENTIFIER="Hello"
+INTERNAL_SENDER_DESCRIPTION="internal description"
+TITLE="Testing bagit"
+DATE_START="2024-03-21"
+RECORD_CREATORS="Creator"
+RECORD_TYPE="rec_type"
+EXTEND_SIZE="123456"
+SUBJECTS="Subject"
+OFFICE="Office"
+mgarcia@arda:~/Work/clamdock$
+```
+
+Then you run the container to create the _bag_
+
+```
+mgarcia@arda:~/Work/clamdock$ docker run -it --rm --env-file bagit_env -v "/home/mgarcia/Work/clamdock_data/mybag:/mydir" --name mgbagit mybagit bagit.py --contact-name 'john' /mydir
+mgarcia@arda:~/Work/clamdock$
+```
+
+Checking the _bag_
+
+```
+mgarcia@arda:~/Work/clamdock_data/mybag$ cat bag-info.txt
+Bag-Software-Agent: bagit.py v1.8.1 <https://github.com/LibraryOfCongress/bagit-python>
+Bagging-Date: 2024-09-09
+Date-Start: "2024-03-21"
+Extend-Size: "123456"
+External-Identifier: "Hello"
+Internal-Sender-Description: "internal description"
+Office: "Office"
+Payload-Oxum: 607.3
+Record-Creators: "Creator"
+Record-Type: "rec_type"
+Source-Organization: "KAUST"
+Subjects: "Subject"
+Title: "Testing bagit"
+mgarcia@arda:~/Work/clamdock_data/mybag$
 ```
 
 ## Jhove
