@@ -32,9 +32,17 @@ dest_dir = /home/mgarcia/Work/clamdock_data/dest/${ACCESSION:accession_id}
 
 [CLAMAV]
 av_logs_root = /home/mgarcia/Work/clamdock_data/logs
+#
+# TODO: Check if directory exists.
+# For the moment, it has to be created by hand - but only the
+# first time
 quarantine_dir = /home/mgarcia/Work/clamdock_data/quarantine
 quarantine_file = ${quarantine_dir}/${ACCESSION:accession_id}
 quarantine_days = 30
+#
+# TODO: Check if the volume exists.
+# For the moment it has to be created by hand - only the first time.
+av_volume = clamdb
 
 [DROID]
 # The profile is the database with the metadata in binary format.
