@@ -6,6 +6,12 @@ Running ClamAV inside Docker
 
 ### Input File
 
+Copy the provided example configuration file to the actual file and modidy it as needed, like setting the correct path to the files
+
+```
+mgarcia@ilmen:~/Work/clamdock$ cp 000_000_0000.cfg_example 000_000_0000.cfg
+```
+
 Example of input file
 
 ```
@@ -82,6 +88,7 @@ a-garcm0b@library-docker-test:~/Work/clamdock/airflow$
 Next we update the virus database
 
 ```
+# Linux
 docker run -it --rm \
 --name 'freshclamdb' \
 --mount source=clamdb,target=/var/lib/clamav \
