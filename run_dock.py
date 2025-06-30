@@ -2,7 +2,7 @@ import logging as log
 import sys
 
 
-from configparser import ConfigParser, ExtendedInterpolation
+from configparser import ConfigParser, ExtendedInterpolation, SectionProxy
 from pathlib import Path
 from typing import List
 from subprocess import run, PIPE, STDOUT
@@ -73,7 +73,7 @@ def is_infected(av_log: str) -> bool:
     return is_infected
 
 
-def runAV(av_config: ConfigParser) -> None:
+def runAV(av_config: SectionProxy) -> None:
     dt_run_av = date.today().strftime("%Y%m%d")
 
     #
@@ -118,10 +118,10 @@ def runAV(av_config: ConfigParser) -> None:
         result = run(av_check, shell=True, stdout=PIPE, stderr=STDOUT, text=True)
         result.check_returncode
         if is_infected(result.stdout):
-            raise (f"Possible infected file in {{av_target_dir}}")
+            raise RuntimeError(f"Possible infected file in {{av_target_dir}}")
 
 
-def copyFiles(f_config: ConfigParser) -> None:
+def copyFiles(f_config: SectionProxy) -> None:
     src = str2list(f_config["source_dir"])
     dest = Path(f_config["dest_dir"])
 
@@ -151,7 +151,7 @@ def copyFiles(f_config: ConfigParser) -> None:
         result.returncode
 
 
-def createBag(config: ConfigParser, bag_data: dict) -> None:
+def createBag(config: SectionProxy, bag_data: dict) -> None:
     """
     Create a Bag structure with `bag_data` in directory `dest_dir` specified
     in `config`. The bag_data is passed to the docker container via a
@@ -200,7 +200,7 @@ def createBag(config: ConfigParser, bag_data: dict) -> None:
     result.returncode
 
 
-def runDroid(config: ConfigParser) -> None:
+def runDroid(config: SectionProxy) -> None:
     """
     Run DROID in two steps: create profile, and export profile to CSV.
     """
@@ -240,7 +240,7 @@ def runDroid(config: ConfigParser) -> None:
     result.returncode
 
 
-def runJhove(config: ConfigParser, modules: ConfigParser) -> None:
+def runJhove(config: SectionProxy, modules: SectionProxy) -> None:
     """
     Run JHOVE
     docker run --rm --name jhove \
@@ -299,7 +299,7 @@ def is_over_quarantine(quarantine_file: Path) -> bool:
     return today > av_check + timedelta(days=quar_days)
 
 
-def create_quarantine_file(config_av: ConfigParser) -> None:
+def create_quarantine_file(config_av: SectionProxy) -> None:
     """Create the quarantine file in the format:
     YYYY-MM-DD (today)
     99 (quarantine_duration)
@@ -312,16 +312,16 @@ def create_quarantine_file(config_av: ConfigParser) -> None:
         fout.write(config_av["quarantine_days"] + "\n")
 
 
-def get_user(config: ConfigParser) -> str:
+def get_user(config: SectionProxy) -> tuple[str,str]:
     """Check if the user and group were provided in the configuration file.
     If not, then we set 'root' for user and group."""
 
     if config.has_section("USER"):
-        uid = config["USER"].get("uid", "root")
-        gid = config["USER"].get("gid", "root")
+        uid = config.get("uid", "0")
+        gid = config.get("gid", "0")
     else:
-        uid = "root"
-        gid = "root"
+        uid = "0"
+        gid = "0"
 
     return uid, gid
 
@@ -347,7 +347,7 @@ def main() -> None:
         log.error("Probably the config file parameter was not provded")
         raise Exception("Variable with file has a problem")
 
-    uid, gid = get_user(config)
+    uid, gid = get_user(config["USER"])
 
     # Update the ClamAV with extra variables. This is just convenience.
     config["CLAMAV"].update({"av_location": config["BAGGER"]["source_dir"]})
