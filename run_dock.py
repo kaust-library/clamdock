@@ -316,12 +316,8 @@ def get_user(config: SectionProxy) -> tuple[str,str]:
     """Check if the user and group were provided in the configuration file.
     If not, then we set 'root' for user and group."""
 
-    if config.has_section("USER"):
-        uid = config.get("uid", "0")
-        gid = config.get("gid", "0")
-    else:
-        uid = "0"
-        gid = "0"
+    uid = config.get("uid", "0")
+    gid = config.get("gid", "0")
 
     return uid, gid
 
