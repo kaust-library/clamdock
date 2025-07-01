@@ -1,10 +1,10 @@
-FROM ibmjava:jre as build
+FROM ibmjava:8-jre AS build
 WORKDIR /work
 RUN wget --no-verbose http://software.openpreservation.org/rel/jhove-latest.jar
 COPY files/auto-install.xml /work
 RUN java -jar jhove-latest.jar auto-install.xml
 
-FROM ibmjava:jre-alpine
+FROM ibmjava:8-jre
 COPY --from=build /opt/jhove /opt/jhove
 # CMD ["/opt/jhove/jhove"]
 ENTRYPOINT [ "/opt/jhove/jhove" ]

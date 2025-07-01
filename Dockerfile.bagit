@@ -1,14 +1,16 @@
-FROM python:3.11-bookworm
+FROM python:3.13-slim-bookworm
 
 ARG email="library.systems@kaust.edu.sa"
 
-LABEL maintainer=${email}
+LABEL maintainer="library.systems@kaust.edu.sa"
 
-ENV AP=/app
+# Copilot fix for the vulnerability in the image
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends gcc && \
+	pip install --upgrade pip && \
+	pip install bagit && \
+	apt-get purge -y --auto-remove gcc && \
+	rm -rf /var/lib/apt/lists/*
 
-RUN pip install bagit
-
-
-COPY ./app ${AP}
+COPY ./app /app
 
 ENTRYPOINT [ "python" ,"/app/bagdata.py"]
