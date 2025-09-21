@@ -227,22 +227,26 @@ Jhove (Rel. 1.28.0, 2023-05-18)
 
 ### Prequisite
 
-Download Java JRE first
+Download Java JRE first. Note that the version of DROID may require an update of Java as mentioned in this remark: DROID 6.8.1 requires Java 21. We will use [Amazon Java](https://hub.docker.com/_/amazoncorretto) to build the container.
 
 ```
-(clamdock) PS C:\Users\garcm0b\Work\clamdock\files> docker pull ibmjava:jre
+mgarcia@PC-KL-26743:~/Work/clamdock$ docker pull amazoncorretto:21.0.8-al2
 ```
 
 Next download [DROID](https://www.nationalarchives.gov.uk/information-management/manage-information/preserving-digital-records/droid/) for all platforms (instead of the Windows version), and extract the archive into the _files_ directory
 
 ```
-PS C:\Users\mgarcia\Downloads> expand-Archive -path '.\droid-binary-6.6.1-bin.zip' -destination 'C:\Users\mgarcia\Work\clamdock\files\droid'
+PS C:\Users\mgarcia\Downloads> expand-Archive -path '.\droid-binary-6.6.1-bin.zip' -destination 'C:\Users\mgarcia\Work\clamdock\files\droid' (Windows)
+# *or*
+mgarcia@PC-KL-26743:~/Downloads$ unzip droid-binary-6.8.1-bin.zip -d ~/Work/clamdock/files/droid/ (Linux/WSL)
 ```
 
 Building the container
 
 ```
-PS C:\Users\mgarcia\Work\clamdock> docker build -f Dockerfile.droid -t mydroid .
+PS C:\Users\mgarcia\Work\clamdock> docker build -f Dockerfile.droid -t mydroid . (Powershell)
+# *or*
+mgarcia@PC-KL-26743:~/Work/clamdock$ docker build -f Dockerfile.jhove -t myjhove . (Linux/WSL)
 ```
 
 Running the DROID contaner

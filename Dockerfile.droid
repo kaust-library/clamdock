@@ -1,4 +1,4 @@
-FROM ibmjava:8-jre
+FROM amazoncorretto:21.0.8-al2
 
 COPY files/droid /opt/droid
 
