@@ -212,7 +212,7 @@ def runDroid(config: SectionProxy) -> None:
 
     chdir(droid_data)
     docker_run = "docker run --rm --name droid"
-    docker_user = f"--user={config['uid']}:{config['gid']}"
+    docker_user = ''
     docker_image = "mydroid"
 
     docker_droid = f"-v {droid_dir}:/droid"

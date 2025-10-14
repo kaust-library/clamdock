@@ -2,4 +2,5 @@ FROM amazoncorretto:21.0.8-al2
 
 COPY files/droid /opt/droid
 
+RUN chmod +x /opt/droid/droid.sh
 ENTRYPOINT [ "/opt/droid/droid.sh" ]
