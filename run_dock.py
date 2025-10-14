@@ -87,9 +87,10 @@ def runAV(av_config: SectionProxy) -> None:
     #
     # Update antivirus database.
     log.info("Updating AV database")
-    av_update = """docker run -it --rm --name 'freshclamdb'  \
+    av_update = """docker run -it --rm --name freshclamdb  \
     --mount source=clamdb,target=/var/lib/clamav  \
     clamav/clamav:latest freshclam"""
+    log.debug(f"update command: {av_update}")
     result = run(av_update, shell=True, stdout=PIPE, stderr=STDOUT, text=True)
     log.info("Update of AV database done")
     log.debug("Output of AV database update:")
