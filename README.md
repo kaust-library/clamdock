@@ -1,6 +1,32 @@
-# Clamdock
+Clamdock
+========
 
-Running ClamAV inside Docker
+Digital preservation workflow with Docker.
+
+# Running
+
+Running the script:
+
+1. Activate the virtual environment.
+1. Edit the configuration file with the details of the items that will be exported to Libnova.
+    * The accession number: `accession_id = 000_000_0000`
+    * The source directory: `source_dir = C:\Users\garcm0b\Work\clamdock_data\src\test01`
+    * The destination directory: `dest_dir = C:\Users\garcm0b\Work\clamdock_data\dest\${ACCESSION:accession_id}`. Note that the accession number is used to name the destination directory.
+1. Run the python script.
+
+```
+# Activate the virtual environment
+. .\venv\Scripts\activate
+
+# Edit the configuration file
+
+# Run the script
+python .\run_dock.py .\000_000_0000.cfg
+```
+
+# Configuration
+
+The configuration needs to be done only once.
 
 ## ClamAV Container
 
