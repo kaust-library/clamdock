@@ -14,11 +14,15 @@ Running the script:
     * The destination directory: `dest_dir = C:\Users\garcm0b\Work\clamdock_data\dest\${ACCESSION:accession_id}`. Note that the accession number is used to name the destination directory.
 1. Run the python script.
 
+Something like this:
+
 ```
 # Activate the virtual environment
 . .\venv\Scripts\activate
 
 # Edit the configuration file
+cp 000_000_0000.cfg_example <you_name_here>.cfg
+<edit your config file>
 
 # Run the script
 python .\run_dock.py .\000_000_0000.cfg
