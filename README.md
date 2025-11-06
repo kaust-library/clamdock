@@ -3,6 +3,22 @@ Clamdock
 
 Digital preservation workflow with Docker.
 
+# Introduction
+
+![Digital Preservation Workflow](Pictures/Preservation_ingest_workflow.png)
+
+Automate the digital preservation workflow. 
+
+The workflow have the following steps:
+
+1. Run the antivirus.
+1. Create a _bag_ file from the source folders.
+1. Create a XML file Dublin Core.
+1. Run Droid for extraction of the metadata.
+1. Run JHove as a complement of the metadata.
+
+Next we describe the usage of the script, and the installation of dependencies are below
+
 # Running
 
 Running the script:
@@ -32,9 +48,9 @@ python .\run_dock.py .\000_000_0000.cfg
 
 The configuration needs to be done only once.
 
-## ClamAV Container
+# ClamAV Container
 
-### Input File
+## Input File
 
 Copy the provided example configuration file to the actual file and modidy it as needed, like setting the correct path to the files
 
@@ -103,7 +119,7 @@ WAVE-hul     = no
 XML-hul      = no
 ```
 
-### Persisting the Virus Database
+## Persisting the Virus Database
 
 Creating a volume for [persisting the virus database](https://docs.clamav.net/manual/Installing/Docker.html#persisting-the-virus-database-volume):
 
@@ -113,7 +129,7 @@ clamdb
 a-garcm0b@library-docker-test:~/Work/clamdock/airflow$
 ```
 
-### Update Virus Database
+## Update Virus Database
 
 Next we update the virus database
 
@@ -125,7 +141,7 @@ docker run -it --rm \
 clamav/clamav:latest freshclam
 ```
 
-### Scanning a Folder
+## Scanning a Folder
 
 Running the ClamAV container directly from command line as test.
 
@@ -145,7 +161,7 @@ Starting ClamAV
 (...)
 ```
 
-## Copy Container
+# Copy Container
 
 Using a container to copy files for the bagIt folder
 
@@ -157,9 +173,9 @@ PS C:\Users\garcm0b\Work> docker run -it --rm --name cp_test `
 PS C:\Users\garcm0b\Work>
 ```
 
-## BagIt
+# BagIt
 
-### Building
+## Building
 
 Build the container image using the `Dockerfile.bagit`
 
@@ -172,7 +188,7 @@ docker:default
  (...)
 ```
 
-### Running
+## Running
 
 After building the container, you will need to create a file with environment variables used by the `bagit`
 
@@ -220,7 +236,7 @@ Title: "Testing bagit"
 mgarcia@arda:~/Work/clamdock_data/mybag$
 ```
 
-## Jhove
+# Jhove
 
 Installing Jhove on the container
 
@@ -253,9 +269,9 @@ Jhove (Rel. 1.28.0, 2023-05-18)
   (...)
 ```
 
-## DROID
+# DROID
 
-### Prequisite
+## Prequisite
 
 Download Java JRE first. Note that the version of DROID may require an update of Java as mentioned in this remark: DROID 6.8.1 requires Java 21. We will use [Amazon Java](https://hub.docker.com/_/amazoncorretto) to build the container.
 
